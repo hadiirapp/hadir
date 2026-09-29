@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>حاضر</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F1F5F4;--card:#fff;--ink:#14201F;--mute:#5E6F6D;--line:#DCE4E2;--brand:#0F3D3E;--on:#fff;--ok:#2F8F6B;--bad:#B5473A}
+@media(prefers-color-scheme:dark){:root{--bg:#0D1716;--card:#15211F;--ink:#E9F0EE;--mute:#93A6A3;--line:#243533;--brand:#6FC1B8;--on:#0D1716;--ok:#4CC08F;--bad:#E27A6C}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 "IBM Plex Sans Arabic",Tahoma,system-ui,sans-serif;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+main{max-width:520px;margin:0 auto;padding:0 16px 40px}
+header{padding:14px 0 6px}
+.top{display:flex;justify-content:space-between;align-items:center}
+h1{margin:0;font-size:1.5rem;font-weight:700;color:var(--brand)}
+h2{margin:0 0 10px;font-size:1.05rem}
+.sub,.mute{color:var(--mute);font-size:.9rem}
+.tabs{display:flex;gap:6px;margin:8px 0;background:var(--line);padding:4px;border-radius:12px}
+.tabs button{flex:1;border:0;border-radius:9px;padding:9px 4px;font:600 .95rem inherit;background:transparent;color:var(--mute);cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--card);color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:14px}
+input,select{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+.big{display:block;margin:26px auto 10px;width:min(62vw,230px);aspect-ratio:1;border-radius:50%;border:0;background:var(--brand);color:var(--on);font:700 1.4rem inherit;cursor:pointer}
+.big.in{background:var(--bad)}
+.big:active{transform:scale(.96)}
+.state{text-align:center;font-weight:600}
+.msg{min-height:1.4em;color:var(--ok);font-size:.95rem}
+.msg.err{color:var(--bad)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--ok);margin-inline-end:8px}
+.btn{border:1px solid var(--brand);background:transparent;color:var(--brand);padding:10px 14px;border-radius:10px;font:600 .95rem inherit;cursor:pointer}
+.btn.fill{background:var(--brand);color:var(--on)}
+.btn:disabled{opacity:.5}
+.g{display:grid;gap:10px}
+.two{display:flex;gap:8px}
+.two>*{flex:1}
+.num{font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:embed}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="top"><h1>حاضر</h1><button class="btn" id="out" hidden>خروج</button></div>
+  <div class="sub" id="vn"></div>
+  <div class="msg" id="msg" aria-live="polite"></div>
+</header>
+<div id="app"><div class="mute">جاري التحميل…</div></div>
+</main>
+
+<script type="module">
+import {initializeApp,deleteApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getFirestore,doc,getDoc,setDoc,updateDoc,addDoc,collection,query,where,onSnapshot,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+const cfg={
+  apiKey:"AIzaSyCauWSs3cZKIsUmWynizn0AVPget9IeKt8",
+  authDomain:"hadir-69322.firebaseapp.com",
+  projectId:"hadir-69322",
+  storageBucket:"hadir-69322.firebasestorage.app",
+  messagingSenderId:"1073180364182",
+  appId:"1:1073180364182:web:d7a3e145a678e5d195e1b7"
+};
+const app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
+
+const $=i=>document.getElementById(i);
+const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const tm=t=>new Date(t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+const hm=ms=>Math.floor(ms/36e5)+'س '+Math.floor(ms%36e5/6e4)+'د';
+const ER={'auth/invalid-credential':'بيانات الدخول غلط.','auth/invalid-email':'الإيميل مش صحيح.','auth/email-already-in-use':'هالاسم أو الإيميل مستعمل من قبل.','auth/weak-password':'كلمة السر لازم 6 أحرف على الأقل.','auth/network-request-failed':'ما في اتصال بالانترنت.','auth/too-many-requests':'محاولات كتيرة، جرّب بعد شوي.','permission-denied':'ما عندك صلاحية. تأكد إنه قواعد الأمان انحطت بـ Firestore.'};
+const errT=e=>ER[e.code]||'صار خطأ: '+(e.code||e.message);
+const geoT=e=>e.code===1?'اسمح للمتصفح بالوصول للموقع من الإعدادات.':'ما قدرنا نجيب موقعك. فعّل خدمة الموقع وجرّب مرة تانية.';
+const say=(t,bad)=>{const m=$('msg');m.textContent=t||'';m.className='msg'+(bad?' err':'')};
+
+let U=null,V=null,ME={},logs=[],staff=[],mode='staff',tab='now',un=[],busy=false,creating=false;
+const monthStart=()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),1).getTime()};
+const stop=()=>{un.forEach(f=>f());un=[]};
+const sub=(q,fn)=>un.push(onSnapshot(q,fn,e=>say(errT(e),1)));
+const norm=d=>{const x=d.data({serverTimestamps:'estimate'});return{id:d.id,uid:x.uid,name:x.name,t:x.inAt?x.inAt.toMillis():Date.now(),o:x.outAt?x.outAt.toMillis():0}};
+const LOST=16*36e5;
+
+const getPos=()=>new Promise((ok,no)=>navigator.geolocation?navigator.geolocation.getCurrentPosition(ok,no,{enableHighAccuracy:true,timeout:15000}):no({code:0}));
+function dist(a,b){const R=6371000,r=Math.PI/180,dl=(b.latitude-a.latitude)*r,dn=(b.longitude-a.longitude)*r;const h=Math.sin(dl/2)**2+Math.cos(a.latitude*r)*Math.cos(b.latitude*r)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
+
+function lateMin(x,s){
+  if(!s||!s.start)return 0;
+  const [h,m]=s.start.split(':').map(Number);
+  const c=[-1,0].map(k=>{const z=new Date(x.t);z.setDate(z.getDate()+k);z.setHours(h,m,0,0);return +z});
+  const st=c.reduce((a,b)=>Math.abs(b-x.t)<Math.abs(a-x.t)?b:a);
+  const l=Math.floor((x.t-st)/6e4);
+  return l>(V.grace||0)?l:0;
+}
+function sum(uid){
+  const s=staff.find(z=>z.id===uid)||ME;
+  let ms=0,late=0,open=0;const days=new Set();
+  for(const x of logs.filter(l=>l.uid===uid)){
+    if(x.o)ms+=x.o-x.t;else if(Date.now()-x.t>LOST)open++;else ms+=Date.now()-x.t;
+    days.add(new Date(x.t).toDateString());late+=lateMin(x,s);
+  }
+  return{ms,late,open,days:days.size};
+}
+
+function loginView(){
+  stop();U=V=null;$('out').hidden=true;$('vn').textContent='';
+  const f={
+    staff:'<input id="vc" placeholder="كود المحل" autocapitalize="none"><input id="un" placeholder="اسم المستخدم" autocapitalize="none"><input id="pw" type="password" placeholder="كلمة السر">',
+    admin:'<input id="em" type="email" placeholder="الإيميل"><input id="pw" type="password" placeholder="كلمة السر">',
+    new:'<input id="vn2" placeholder="اسم المحل"><input id="nm" placeholder="اسمك"><input id="em" type="email" placeholder="الإيميل"><input id="pw" type="password" placeholder="كلمة السر (6 أحرف على الأقل)">'
+  }[mode];
+  $('app').innerHTML='<div class="tabs">'+[['staff','موظف'],['admin','مدير'],['new','محل جديد']].map(([k,t])=>'<button data-a="mode" data-k="'+k+'" aria-selected="'+(k===mode)+'">'+t+'</button>').join('')+'</div><div class="card g">'+f+'<button class="btn fill" data-a="'+(mode==='new'?'signup':'login')+'">'+(mode==='new'?'إنشاء المحل':'دخول')+'</button></div>';
+}
+
+function staffView(){
+  const o=logs.find(x=>!x.o&&Date.now()-x.t<=LOST),m=sum(U.uid);
+  $('app').innerHTML='<button class="big'+(o?' in':'')+'" data-a="punch">'+(o?'تسجيل خروج':'تسجيل دخول')+'</button>'
+   +'<div class="state">'+(o?'داخل الشيفت منذ '+tm(o.t)+' ('+hm(Date.now()-o.t)+')':'خارج الشيفت')+'</div>'
+   +'<div class="card"><h2>هالشهر</h2><div class="row"><span>الساعات</span><b class="num">'+hm(m.ms)+'</b></div><div class="row"><span>أيام العمل</span><b>'+m.days+'</b></div><div class="row"><span>دقايق التأخير</span><b class="num">'+m.late+'</b></div></div>'
+   +'<div class="mute" style="text-align:center;margin-top:12px">شيفتك: '+esc(ME.start||'-')+' – '+esc(ME.end||'-')+'</div>';
+}
+
+function adminView(){
+  const T=[['now','الآن'],['staff','الموظفين'],['rep','التقرير'],['set','الإعدادات']];
+  let b='';
+  if(tab==='now'){
+    const inn=logs.filter(x=>!x.o&&Date.now()-x.t<=LOST),lost=logs.filter(x=>!x.o&&Date.now()-x.t>LOST);
+    b='<div class="card"><h2>الآن بالمحل ('+inn.length+')</h2>'+(inn.length?inn.map(x=>'<div class="row"><span><i class="dot"></i>'+esc(x.name)+'</span><span class="num mute">'+tm(x.t)+'</span></div>').join(''):'<div class="mute">ما حدا بالمحل هلأ.</div>')+'</div>'
+     +(lost.length?'<div class="card"><h2>بدون تسجيل خروج ('+lost.length+')</h2>'+lost.map(x=>'<div class="row"><span>'+esc(x.name)+'</span><span class="num mute">'+tm(x.t)+'</span></div>').join('')+'<div class="mute">هالتسجيلات ما بتنحسب بالساعات.</div></div>':'');
+  }else if(tab==='staff'){
+    b='<div class="card"><h2>كود المحل</h2><div class="num" style="font-size:1.6rem;font-weight:700">'+esc(V.code)+'</div><div class="mute">الموظف بيدخل بالكود مع اسم المستخدم وكلمة السر.</div></div>'
+     +'<div class="card g"><h2 style="margin:0">موظف جديد</h2><input id="sn" placeholder="الاسم"><input id="su" placeholder="اسم المستخدم (حروف إنجليزية وأرقام)" autocapitalize="none"><input id="sp" placeholder="كلمة السر (6 أحرف على الأقل)">'
+     +'<div class="two"><label class="mute">بداية الشيفت<input id="ss" type="time" value="18:00"></label><label class="mute">نهاية الشيفت<input id="se" type="time" value="02:00"></label></div>'
+     +'<select id="st"><option value="hour">بالساعة</option><option value="month">راتب شهري</option></select><input id="sr" type="number" placeholder="المبلغ بالدولار"><button class="btn fill" data-a="addStaff">أضف الموظف</button></div>'
+     +'<div class="card"><h2>الموظفين ('+staff.length+')</h2>'+staff.map(s=>'<div class="row"><span>'+esc(s.name)+'<div class="mute num">'+esc(s.start)+' – '+esc(s.end)+(s.active===false?' (موقوف)':'')+'</div></span><button class="btn" data-a="toggle" data-id="'+s.id+'">'+(s.active===false?'تفعيل':'إيقاف')+'</button></div>').join('')+'</div>';
+  }else if(tab==='rep'){
+    b='<div class="card"><h2>هالشهر</h2>'+(staff.map(s=>{const m=sum(s.id);const amt=s.payType==='hour'?'$'+(m.ms/36e5*(s.rate||0)).toFixed(2):'$'+(s.rate||0)+' شهري';return'<div class="row"><span>'+esc(s.name)+'<div class="mute">'+m.days+' أيام، تأخير '+m.late+' د'+(m.open?'، بدون خروج '+m.open:'')+'</div></span><span style="text-align:end"><b class="num">'+hm(m.ms)+'</b><div class="mute num">'+amt+'</div></span></div>'}).join('')||'<div class="mute">ما في موظفين.</div>')+'</div>';
+  }else{
+    b='<div class="card g"><h2 style="margin:0">إعدادات المحل</h2><button class="btn fill" data-a="setLoc">اعتمد موقعي الحالي كموقع المحل</button><div class="mute">'+(V.lat==null?'لسا ما تحدد الموقع. لازم تكون بالمحل.':'تم تحديد موقع المحل.')+'</div>'
+     +'<label class="mute">المسافة المسموحة (متر)<input id="rd" type="number" value="'+(V.radius||100)+'"></label><label class="mute">دقايق السماح للتأخير<input id="gr" type="number" value="'+(V.grace??10)+'"></label><button class="btn" data-a="saveSet">احفظ</button></div>';
+  }
+  $('app').innerHTML='<div class="tabs">'+T.map(([k,t])=>'<button data-a="tab" data-k="'+k+'" aria-selected="'+(k===tab)+'">'+t+'</button>').join('')+'</div>'+b;
+}
+
+function render(){
+  if(!U)return;
+  const a=document.activeElement;
+  if(U.role==='admin'&&a&&/INPUT|SELECT/.test(a.tagName)&&(tab==='staff'||tab==='set'))return;
+  U.role==='admin'?adminView():staffView();
+}
+setInterval(render,30000);
+
+async function boot(u){
+  stop();
+  if(!u)return loginView();
+  try{
+    const us=await getDoc(doc(db,'users',u.uid));
+    if(!us.exists()){await signOut(auth);loginView();return say('هالحساب مش مربوط بمحل. أنشئ محل جديد أو اطلب من المدير.',1)}
+    U={uid:u.uid,...us.data()};
+    const vs=await getDoc(doc(db,'venues',U.venueId));
+    V={id:vs.id,...vs.data()};
+    $('out').hidden=false;$('vn').textContent=V.name;say('');
+    sub(doc(db,'venues',V.id),s=>{V={id:s.id,...s.data()};$('vn').textContent=V.name;render()});
+    if(U.role==='admin'){
+      sub(collection(db,'venues',V.id,'staff'),s=>{staff=s.docs.map(d=>({id:d.id,...d.data()}));render()});
+      sub(query(collection(db,'venues',V.id,'logs'),where('inAt','>=',new Date(monthStart()))),s=>{logs=s.docs.map(norm);render()});
+    }else{
+      sub(doc(db,'venues',V.id,'staff',U.uid),s=>{ME=s.data()||{};if(ME.active===false){signOut(auth).then(()=>say('حسابك موقوف. حاكي المدير.',1));return}render()});
+      sub(query(collection(db,'venues',V.id,'logs'),where('uid','==',U.uid)),s=>{logs=s.docs.map(norm).filter(x=>x.t>=monthStart());render()});
+    }
+    render();
+  }catch(e){loginView();say(errT(e),1)}
+}
+onAuthStateChanged(auth,u=>{if(!creating)boot(u)});
+
+async function doLogin(){
+  const em=mode==='staff'?$('un').value.trim().toLowerCase()+'.'+$('vc').value.trim().toLowerCase()+'@hadir.app':$('em').value.trim();
+  try{await signInWithEmailAndPassword(auth,em,$('pw').value)}catch(e){say(errT(e),1)}
+}
+async function doSignup(){
+  const vn=$('vn2').value.trim(),nm=$('nm').value.trim(),em=$('em').value.trim(),pw=$('pw').value;
+  if(!vn||!nm||!em||pw.length<6)return say('عبّي كل الخانات، وكلمة السر 6 أحرف على الأقل.',1);
+  creating=true;
+  try{
+    let c;
+    try{c=await createUserWithEmailAndPassword(auth,em,pw)}catch(e){if(e.code==='auth/email-already-in-use')c=await signInWithEmailAndPassword(auth,em,pw);else throw e}
+    const ex=await getDoc(doc(db,'users',c.user.uid));
+    if(!ex.exists()){
+      const code=Array.from({length:6},()=>'abcdefghjkmnpqrstuvwxyz23456789'[Math.random()*31|0]).join('');
+      const v=await addDoc(collection(db,'venues'),{name:vn,code,ownerUid:c.user.uid,lat:null,lng:null,radius:100,grace:10});
+      await setDoc(doc(db,'users',c.user.uid),{role:'admin',venueId:v.id,name:nm});
+    }
+    creating=false;await boot(c.user);
+  }catch(e){creating=false;say(errT(e),1)}
+}
+async function punch(){
+  const o=logs.find(x=>!x.o&&Date.now()-x.t<=LOST);
+  try{
+    if(o){await updateDoc(doc(db,'venues',V.id,'logs',o.id),{outAt:serverTimestamp()});return say('تم تسجيل الخروج. الله يعطيك العافية!')}
+    if(V.lat==null)return say('المدير لسا ما حدد موقع المحل.',1);
+    say('عم نتحقق من موقعك…');
+    const d=Math.round(dist((await getPos()).coords,{latitude:V.lat,longitude:V.lng}));
+    if(d>V.radius)return say('إنت بعيد '+d+' متر عن المحل. لازم تكون ضمن '+V.radius+' متر.',1);
+    await addDoc(collection(db,'venues',V.id,'logs'),{uid:U.uid,name:U.name,inAt:serverTimestamp(),outAt:null});
+    say('تم تسجيل الدخول. شيفت موفق!');
+  }catch(e){say(typeof e.code==='number'?geoT(e):errT(e),1)}
+}
+async function addStaff(){
+  const nm=$('sn').value.trim(),u=$('su').value.trim().toLowerCase(),pw=$('sp').value,st=$('ss').value,en=$('se').value,pt=$('st').value,rt=+$('sr').value||0;
+  if(!nm||!/^[a-z0-9]{3,}$/.test(u)||pw.length<6||!st||!en)return say('الاسم مطلوب، واسم المستخدم 3 حروف إنجليزية أو أرقام على الأقل، وكلمة السر 6 أحرف.',1);
+  const app2=initializeApp(cfg,'sec'+Date.now());
+  try{
+    const a2=getAuth(app2);
+    const c=await createUserWithEmailAndPassword(a2,u+'.'+V.code+'@hadir.app',pw);
+    await signOut(a2);
+    await setDoc(doc(db,'users',c.user.uid),{role:'staff',venueId:V.id,name:nm,username:u});
+    await setDoc(doc(db,'venues',V.id,'staff',c.user.uid),{name:nm,username:u,start:st,end:en,payType:pt,rate:rt,active:true});
+    say('انضاف الموظف '+nm+'.');
+  }catch(e){say(errT(e),1)}
+  finally{deleteApp(app2)}
+}
+async function toggle(b){
+  const s=staff.find(x=>x.id===b.dataset.id);
+  try{await updateDoc(doc(db,'venues',V.id,'staff',s.id),{active:s.active===false})}catch(e){say(errT(e),1)}
+}
+async function setLoc(){
+  try{const c=(await getPos()).coords;await updateDoc(doc(db,'venues',V.id),{lat:c.latitude,lng:c.longitude});say('تم تحديد موقع المحل.')}
+  catch(e){say(typeof e.code==='number'?geoT(e):errT(e),1)}
+}
+async function saveSet(){
+  const r=Math.max(20,+$('rd').value||100),g=Math.max(0,+$('gr').value||0);
+  try{await updateDoc(doc(db,'venues',V.id),{radius:r,grace:g});say('انحفظت الإعدادات.')}catch(e){say(errT(e),1)}
+}
+
+const guard=f=>async b=>{if(busy)return;busy=true;b.disabled=true;try{await f(b)}finally{busy=false;b.disabled=false}};
+const A={
+  mode:b=>{mode=b.dataset.k;say('');loginView()},
+  tab:b=>{tab=b.dataset.k;render()},
+  login:guard(doLogin),signup:guard(doSignup),punch:guard(punch),
+  addStaff:guard(addStaff),toggle:guard(toggle),setLoc:guard(setLoc),saveSet:guard(saveSet)
+};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b&&A[b.dataset.a])A[b.dataset.a](b)});
+$('out').onclick=()=>signOut(auth);
+</script>
+</body>
+</html>
