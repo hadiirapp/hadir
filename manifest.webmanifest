@@ -1,0 +1,10 @@
+{
+  "name": "حاضر · Hadir",
+  "short_name": "حاضر",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0D1716",
+  "theme_color": "#0F3D3E",
+  "icons": [{"src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}]
+}

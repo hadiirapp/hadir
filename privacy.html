@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F3D3E">
+<link rel="icon" href="icon.png">
+<title>الخصوصية · حاضر</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F1F5F4;--card:#fff;--ink:#14201F;--mute:#5E6F6D;--line:#DCE4E2;--brand:#0F3D3E}
+@media(prefers-color-scheme:dark){:root{--bg:#0D1716;--card:#15211F;--ink:#E9F0EE;--mute:#93A6A3;--line:#243533;--brand:#6FC1B8}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;font-size:16px;line-height:1.7;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+main{max-width:680px;margin:0 auto;padding:16px 18px 56px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+h1{margin:0;font-size:1.5rem;color:var(--brand)}
+h2{font-size:1.05rem;margin:0 0 6px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:12px}
+.card p,.card ul{margin:0}
+.card ul{padding-inline-start:20px}
+.mute{color:var(--mute);font-size:.9rem}
+a{color:var(--brand)}
+button{font-family:inherit;border:1px solid var(--brand);background:transparent;color:var(--brand);padding:6px 12px;border-radius:10px;font-weight:600;cursor:pointer}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<div class="top"><h1 id="h">حاضر</h1><button id="sw" type="button">EN</button></div>
+
+<section id="ar">
+<p class="mute">سياسة الخصوصية · آخر تحديث: 1 تشرين الأول 2026</p>
+<div class="card"><h2>شو هو حاضر؟</h2><p>تطبيق بيستعمله المطعم أو المحل اللي بتشتغل فيه ليسجّل حضور الموظفين، وقوائم الفتح والإغلاق، والتنبيهات للمدير.</p></div>
+<div class="card"><h2>شو المعلومات اللي منجمعها؟</h2><ul>
+<li>اسمك واسم المستخدم اللي عطاك ياه المدير.</li>
+<li>أوقات تسجيل الدخول والخروج، وأي تعديل بيعمله المدير عليها.</li>
+<li>بعدك عن المحل بالأمتار، ودقة الـ GPS، <b>بس لحظة ما تضغط تسجيل دخول</b>.</li>
+<li>مهام القوائم اللي علّمتها، والتنبيهات اللي بعتّها للمدير.</li>
+<li>بيانات الشيفت والراتب اللي بيدخلها المدير.</li></ul></div>
+<div class="card"><h2>الموقع</h2><p>التطبيق ما بيتتبّع موقعك بالخلفية أبداً. بيطلب الموقع مرة وحدة لما تضغط تسجيل دخول، بيحسب قديش بعيد عن المحل، وبيحفظ المسافة بس، مش إحداثيات موقعك. المتصفح بيطلب إذنك، وفيك ترفض، بس وقتها ما بتقدر تسجّل دخول.</p></div>
+<div class="card"><h2>مين بيشوف معلوماتك؟</h2><p>بس مدير أو صاحب المحل اللي بتشتغل فيه. كل محل مفصول عن غيره، وما حدا من محل تاني بيقدر يشوف بياناتك. ما منبيع المعلومات ولا منستعملها للإعلانات.</p></div>
+<div class="card"><h2>وين بتنحفظ؟</h2><p>على خدمة Google Firebase، مع قواعد أمان بتمنع أي حدا غير المخوّل من القراءة أو التعديل. التسجيلات ما فيها تنمحى أو تتعدّل بلا ما ينحفظ سجل بالتعديل.</p></div>
+<div class="card"><h2>لحد إيمتى؟</h2><p>طول ما المحل مشترك بالتطبيق. إذا بدك تنمحى معلوماتك، اطلب من مديرك أو راسلنا.</p></div>
+<div class="card"><h2>تواصل</h2><p>لأي سؤال: <a href="mailto:iiiialykh@gmail.com">iiiialykh@gmail.com</a></p></div>
+<p style="margin-top:18px"><a href="./">← رجوع للتطبيق</a></p>
+</section>
+
+<section id="en" hidden>
+<p class="mute">Privacy Policy · Last updated: October 1, 2026</p>
+<div class="card"><h2>What is Hadir?</h2><p>An app your restaurant or venue uses to record staff attendance, opening and closing checklists, and alerts to the manager.</p></div>
+<div class="card"><h2>What we collect</h2><ul>
+<li>Your name and the username your manager created for you.</li>
+<li>Clock-in and clock-out times, and any edits your manager makes to them.</li>
+<li>Your distance from the venue in metres and the GPS accuracy, <b>only at the moment you tap Clock in</b>.</li>
+<li>Checklist tasks you tick and alerts you send to the manager.</li>
+<li>Shift and pay details entered by your manager.</li></ul></div>
+<div class="card"><h2>Location</h2><p>The app never tracks your location in the background. It asks for your location once when you tap Clock in, calculates your distance from the venue, and stores only that distance, not your coordinates. Your browser asks for permission; you can refuse, but then you cannot clock in.</p></div>
+<div class="card"><h2>Who can see your data</h2><p>Only the manager or owner of the venue you work at. Each venue is separated, so nobody from another venue can see your data. We do not sell your data or use it for advertising.</p></div>
+<div class="card"><h2>Where it is stored</h2><p>On Google Firebase, with security rules that block anyone who is not authorised from reading or changing it. Records cannot be deleted, and every edit is kept in an edit history.</p></div>
+<div class="card"><h2>How long</h2><p>For as long as the venue uses the app. To have your data deleted, ask your manager or contact us.</p></div>
+<div class="card"><h2>Contact</h2><p>Questions: <a href="mailto:iiiialykh@gmail.com">iiiialykh@gmail.com</a></p></div>
+<p style="margin-top:18px"><a href="./">← Back to the app</a></p>
+</section>
+</main>
+<script>
+(function(){var lang='ar';try{lang=localStorage.getItem('hadir-lang')||'ar'}catch(e){}
+function set(l){lang=l;document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';document.getElementById('ar').hidden=l!=='ar';document.getElementById('en').hidden=l==='ar';document.getElementById('sw').textContent=l==='ar'?'EN':'ع';document.getElementById('h').textContent=l==='ar'?'حاضر':'Hadir';document.title=l==='ar'?'الخصوصية · حاضر':'Privacy · Hadir'}
+document.getElementById('sw').onclick=function(){var n=lang==='ar'?'en':'ar';try{localStorage.setItem('hadir-lang',n)}catch(e){}set(n)};set(lang)})();
+</script>
+</body>
+</html>

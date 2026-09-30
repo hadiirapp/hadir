@@ -4,245 +4,529 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>حاضر</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="حاضر">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0F3D3E">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
+<title>حاضر · Hadir</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#F1F5F4;--card:#fff;--ink:#14201F;--mute:#5E6F6D;--line:#DCE4E2;--brand:#0F3D3E;--on:#fff;--ok:#2F8F6B;--bad:#B5473A}
-@media(prefers-color-scheme:dark){:root{--bg:#0D1716;--card:#15211F;--ink:#E9F0EE;--mute:#93A6A3;--line:#243533;--brand:#6FC1B8;--on:#0D1716;--ok:#4CC08F;--bad:#E27A6C}}
+:root{--bg:#F1F5F4;--card:#fff;--ink:#14201F;--mute:#5E6F6D;--line:#DCE4E2;--brand:#0F3D3E;--on:#fff;--ok:#2F8F6B;--bad:#B5473A;--warn:#9A6212;--soft:#E7EFED}
+@media(prefers-color-scheme:dark){:root{--bg:#0D1716;--card:#15211F;--ink:#E9F0EE;--mute:#93A6A3;--line:#243533;--brand:#6FC1B8;--on:#0D1716;--ok:#4CC08F;--bad:#E27A6C;--warn:#E0A94F;--soft:#1C2B29}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 "IBM Plex Sans Arabic",Tahoma,system-ui,sans-serif;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
-main{max-width:520px;margin:0 auto;padding:0 16px 40px}
-header{padding:14px 0 6px}
-.top{display:flex;justify-content:space-between;align-items:center}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;font-size:16px;line-height:1.55;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font-family:inherit}
+main{max-width:560px;margin:0 auto;padding:0 16px 56px}
+header{padding:12px 0 2px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 h1{margin:0;font-size:1.5rem;font-weight:700;color:var(--brand)}
-h2{margin:0 0 10px;font-size:1.05rem}
-.sub,.mute{color:var(--mute);font-size:.9rem}
-.tabs{display:flex;gap:6px;margin:8px 0;background:var(--line);padding:4px;border-radius:12px}
-.tabs button{flex:1;border:0;border-radius:9px;padding:9px 4px;font:600 .95rem inherit;background:transparent;color:var(--mute);cursor:pointer}
-.tabs button[aria-selected=true]{background:var(--card);color:var(--ink)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:14px}
-input,select{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
-.big{display:block;margin:26px auto 10px;width:min(62vw,230px);aspect-ratio:1;border-radius:50%;border:0;background:var(--brand);color:var(--on);font:700 1.4rem inherit;cursor:pointer}
-.big.in{background:var(--bad)}
+h2{margin:0 0 10px;font-size:1.02rem;font-weight:700}
+.hb{display:flex;gap:6px;align-items:center}
+.sub,.mute{color:var(--mute);font-size:.88rem}
+.tabs{display:flex;gap:4px;margin:10px 0 4px;background:var(--line);padding:4px;border-radius:12px}
+.tabs button{flex:1;min-width:0;border:0;border-radius:9px;padding:9px 2px;font-weight:600;font-size:.86rem;line-height:1.2;background:transparent;color:var(--mute);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tabs button[aria-selected=true]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:12px}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:16px}
+textarea{min-height:110px;resize:vertical}
+label.f,div.f{display:grid;gap:4px;color:var(--mute);font-size:.88rem}
+.big{display:block;margin:22px auto 10px;width:min(60vw,220px);aspect-ratio:1;border-radius:50%;border:0;background:var(--brand);color:var(--on);font-weight:700;font-size:1.35rem;line-height:1.3;cursor:pointer;box-shadow:0 10px 30px rgba(15,61,62,.25);transition:transform .12s}
+.big.in{background:var(--bad);box-shadow:0 10px 30px rgba(181,71,58,.25)}
 .big:active{transform:scale(.96)}
+.big:disabled{opacity:.6}
 .state{text-align:center;font-weight:600}
-.msg{min-height:1.4em;color:var(--ok);font-size:.95rem}
+.msg{min-height:1.4em;color:var(--ok);font-size:.92rem}
 .msg.err{color:var(--bad)}
-.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
-.row:first-of-type{border-top:0}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.list>.row:first-child{border-top:0}
+.row.tap{cursor:pointer}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--ok);margin-inline-end:8px}
-.btn{border:1px solid var(--brand);background:transparent;color:var(--brand);padding:10px 14px;border-radius:10px;font:600 .95rem inherit;cursor:pointer}
+.btn{border:1px solid var(--brand);background:transparent;color:var(--brand);padding:10px 14px;border-radius:10px;font-weight:600;font-size:.95rem;cursor:pointer}
 .btn.fill{background:var(--brand);color:var(--on)}
+.btn.bad{border-color:var(--bad);color:var(--bad)}
+.btn.bad.fill{background:var(--bad);color:#fff}
+.btn.sm{padding:6px 10px;font-size:.84rem}
+.btn.block{display:block;width:100%}
 .btn:disabled{opacity:.5}
 .g{display:grid;gap:10px}
 .two{display:flex;gap:8px}
-.two>*{flex:1}
-.num{font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:embed}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.two>*{flex:1;min-width:0}
+.num{font-variant-numeric:tabular-nums}
+.ltr{direction:ltr;unicode-bidi:isolate}
+.badge{display:inline-block;font-size:.72rem;line-height:1.6;padding:0 8px;border-radius:99px;background:var(--soft);color:var(--mute);margin-inline-start:6px;vertical-align:middle}
+.badge.bad{color:var(--bad)}.badge.warn{color:var(--warn)}.badge.ok{color:var(--ok)}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:8px 0 2px}
+.bar i{display:block;height:100%;background:var(--ok);border-radius:99px}
+.item{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:start;background:none;border:0;border-top:1px solid var(--line);padding:12px 0;color:inherit;font-size:1rem;cursor:pointer}
+.list>.item:first-child{border-top:0}
+.ck{flex:none;width:24px;height:24px;border-radius:7px;border:2px solid var(--line);display:grid;place-items:center;font-size:.9rem;color:#fff;margin-top:1px}
+.item.done .ck{background:var(--ok);border-color:var(--ok)}
+.item.done .it{text-decoration:line-through;color:var(--mute)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:99px;padding:7px 12px;font-weight:600;font-size:.88rem;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--brand);color:var(--on);border-color:var(--brand)}
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpi div{background:var(--soft);border-radius:12px;padding:10px 6px;text-align:center}
+.kpi b{display:block;font-size:1.1rem}
+.code{font-size:1.8rem;font-weight:700;letter-spacing:.12em}
+.mnav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.abar{position:sticky;top:0;z-index:20;background:var(--bad);color:#fff;padding:10px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between;font-weight:600}
+.abar button{background:#fff;color:#B5473A;border:0;border-radius:9px;padding:8px 12px;font-weight:700;cursor:pointer;flex:none}
+#sheet{position:fixed;inset:0;z-index:50}
+#sheet .bd{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+#sheet .sh{position:absolute;left:0;right:0;bottom:0;max-height:90vh;overflow:auto;background:var(--card);border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px));max-width:560px;margin:0 auto}
+#sheet .x{position:absolute;top:12px;inset-inline-end:12px;border:0;background:var(--soft);color:var(--ink);width:34px;height:34px;border-radius:50%;font-size:1rem;cursor:pointer}
+#sheet h2{padding-inline-end:40px}
+pre.inv{white-space:pre-wrap;font-family:inherit;background:var(--soft);border-radius:12px;padding:12px;margin:10px 0}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+a{color:var(--brand)}
+.foot{text-align:center;margin-top:18px;font-size:.88rem}
 [hidden]{display:none!important}
 </style>
 </head>
 <body>
+<div class="abar" id="abar" hidden></div>
 <main>
 <header>
-  <div class="top"><h1>حاضر</h1><button class="btn" id="out" hidden>خروج</button></div>
-  <div class="sub" id="vn"></div>
+  <div class="top">
+    <div><h1>حاضر</h1><div class="sub" id="vn"></div></div>
+    <div class="hb"><button class="btn sm" id="lng" data-a="lang">EN</button><button class="btn sm" id="out" data-a="logout" hidden>خروج</button></div>
+  </div>
   <div class="msg" id="msg" aria-live="polite"></div>
 </header>
-<div id="app"><div class="mute">جاري التحميل…</div></div>
+<div id="app"><div class="mute">…</div></div>
 </main>
+<div id="sheet" hidden></div>
 
 <script type="module">
 import {initializeApp,deleteApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {getFirestore,doc,getDoc,setDoc,updateDoc,addDoc,collection,query,where,onSnapshot,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,EmailAuthProvider,reauthenticateWithCredential,updatePassword} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getFirestore,doc,getDoc,getDocs,setDoc,updateDoc,addDoc,collection,query,where,onSnapshot,serverTimestamp,Timestamp,deleteField} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-const cfg={
-  apiKey:"AIzaSyCauWSs3cZKIsUmWynizn0AVPget9IeKt8",
-  authDomain:"hadir-69322.firebaseapp.com",
-  projectId:"hadir-69322",
-  storageBucket:"hadir-69322.firebasestorage.app",
-  messagingSenderId:"1073180364182",
-  appId:"1:1073180364182:web:d7a3e145a678e5d195e1b7"
-};
+const cfg={apiKey:"AIzaSyCauWSs3cZKIsUmWynizn0AVPget9IeKt8",authDomain:"hadir-69322.firebaseapp.com",projectId:"hadir-69322",storageBucket:"hadir-69322.firebasestorage.app",messagingSenderId:"1073180364182",appId:"1:1073180364182:web:d7a3e145a678e5d195e1b7"};
 const app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
+const APP_URL=location.href.split('#')[0].split('?')[0].replace(/index\.html$/,'');
 
+/* ---------- i18n ---------- */
+const L={
+ar:{langBtn:'EN',logout:'خروج',loading:'جاري التحميل…',
+tStaff:'موظف',tAdmin:'مدير',tNew:'محل جديد',vcode:'كود المحل',uname:'اسم المستخدم',pass:'كلمة السر',email:'الإيميل',vname:'اسم المحل',yname:'اسمك',pass6:'كلمة السر (6 أحرف على الأقل)',login:'دخول',create:'إنشاء المحل',
+fillAll:'عبّي كل الخانات، وكلمة السر 6 أحرف على الأقل.',notLinked:'هالحساب مش مربوط بمحل. أنشئ محل جديد أو اطلب من المدير.',suspended:'حسابك موقوف. حاكي المدير.',
+clockIn:'تسجيل دخول',clockOut:'تسجيل خروج',inSince:'داخل الشيفت منذ {0} ({1})',outShift:'خارج الشيفت',checking:'عم نتحقق من موقعك…',
+inOk:'تم تسجيل الدخول. شيفت موفق!',outOk:'تم تسجيل الخروج. الله يعطيك العافية!',noLoc:'المدير لسا ما حدد موقع المحل.',far:'إنت بعيد {0} متر عن المحل. لازم تكون ضمن {1} متر.',
+geoDenied:'اسمح للمتصفح بالوصول للموقع من الإعدادات.',geoFail:'ما قدرنا نجيب موقعك. فعّل خدمة الموقع وجرّب مرة تانية.',offline:'ما في انترنت. اتصل وجرّب مرة تانية.',slow:'الاتصال ضعيف. العملية رح تكمل لما يرجع الانترنت.',
+month:'هالشهر',hours:'الساعات',days:'أيام العمل',lateMin:'دقايق التأخير',myShift:'شيفتك: {0} – {1}',off:'إجازة: {0}',history:'تسجيلاتي هالشهر',none:'لسا ما في تسجيلات.',
+edited:'معدّل',manual:'يدوي',missing:'بدون خروج',late:'تأخير {0} د',now:'هلأ',edit:'تعديل',dist:'{0} م',
+staleMine:'في تسجيل يوم {0} بلا خروج. المدير رح يصلّحه.',a2hs:'لتصير متل التطبيق: اضغط زر المشاركة، بعدها Add to Home Screen.',
+alertBtn:'🔔 نبّه المدير',alertTitle:'تنبيه للمدير',alertNote:'تفاصيل (اختياري): مثلاً طاولة 5',send:'إرسال',alertSent:'انبعت التنبيه للمدير.',alertWait:'استنى دقيقة قبل ما تبعت تنبيه تاني.',
+alertPending:'آخر تنبيه {0}: بانتظار المدير',alertAcked:'آخر تنبيه {0}: المدير استلم ✓',
+changePass:'تغيير كلمة السر',curPass:'كلمة السر الحالية',newPass:'كلمة السر الجديدة (6 أحرف على الأقل)',save:'احفظ',cancel:'رجوع',passOk:'تغيّرت كلمة السر.',
+sShift:'الشيفت',sLists:'القوائم',open:'الفتح',close:'الإغلاق',noItems:'ما في مهام بهالقائمة.',doneBy:'{0} · {1}',
+aNow:'الآن',aTeam:'الفريق',aLists:'القوائم',aRep:'التقرير',aSet:'الإعدادات',
+alerts:'التنبيهات',ack:'استلمت',ackedBy:'✓ {0} · {1}',inVenue:'بالمحل الآن ({0})',nobody:'ما حدا بالمحل هلأ.',notArrived:'لسا ما وصلوا ({0})',lateBy:'متأخر {0} د',
+lateToday:'المتأخرين اليوم ({0})',noOut:'بدون تسجيل خروج ({0})',noOutHint:'هالتسجيلات انحسبت لحد وقت القطع بس. صلّحها إذا لازم.',fix:'صلّح',todayLists:'قوائم اليوم',
+code:'كود المحل',codeHint:'الموظف بيدخل بالكود مع اسم المستخدم وكلمة السر.',shareInvite:'مشاركة',addStaff:'+ موظف جديد',staffList:'الموظفين ({0})',inactive:'موقوف',
+name:'الاسم',unameHint:'اسم المستخدم (حروف إنجليزية وأرقام)',start:'بداية الشيفت',end:'نهاية الشيفت',offDays:'أيام الإجازة',payType:'نوع الدفع',hourly:'بالساعة',monthly:'راتب شهري',rate:'المبلغ بالدولار',perHour:'/ساعة',perMonth:'شهري',
+staffAdded:'جاهز! ابعت لـ {0} بيانات الدخول:',staffBad:'الاسم مطلوب، واسم المستخدم 3 حروف إنجليزية أو أرقام على الأقل، وكلمة السر 6 أحرف.',
+editStaff:'تعديل الموظف',deactivate:'إيقاف',activate:'تفعيل',reissueBtn:'نسي كلمة السر',reissue:'دخول جديد',reissueHint:'بيعمل اسم مستخدم وكلمة سر جداد لنفس الموظف، وبيوقف القديم. ساعاته بتضل محسوبة لنفس الشخص.',newUname:'اسم مستخدم جديد',saved:'انحفظ.',
+invite:'أهلا {0}! هيدي بيانات دخولك على تطبيق حاضر:\nالرابط: {1}\nكود المحل: {2}\nاسم المستخدم: {3}\nكلمة السر: {4}',inviteCode:'تطبيق حاضر: {0}\nكود المحل: {1}',copied:'انسخ.',
+editList:'تعديل القائمة',newItem:'مهمة جديدة',add:'أضف',archive:'آخر 7 أيام',
+totalHours:'مجموع الساعات',totalPay:'مجموع الرواتب',totalLate:'دقايق التأخير',shareRep:'مشاركة التقرير',csv:'ملف CSV',
+addManual:'+ تسجيل يدوي',editLog:'تعديل التسجيل',inTime:'وقت الدخول',outTime:'وقت الخروج (فاضي إذا لسا داخل)',badTimes:'وقت الخروج لازم يكون بعد وقت الدخول.',auditTitle:'سجل التعديلات',
+location:'موقع المحل',setLoc:'اعتمد موقعي الحالي كموقع المحل',locSet:'تم تحديد موقع المحل.',locNot:'لسا ما تحدد الموقع. لازم تكون بالمحل.',locOk:'تم تحديد موقع المحل.',
+radius:'المسافة المسموحة (متر)',grace:'دقايق السماح للتأخير',cutoff:'وقت القطع (نهاية يوم العمل)',cutoffHint:'بعد هالوقت، اللي ما سجّل خروج ما بتنحسبله ساعات زيادة، وبيطلع عندك بـ "بدون خروج".',
+alertTypes:'أنواع التنبيهات (كل سطر نوع)',alertTypesShort:'أنواع التنبيهات',editSet:'تعديل الإعدادات',account:'الحساب',confirmDeact:'متأكد بدك توقف {0}؟',
+noStaff:'ما في موظفين بعد.',permission:'ما عندك صلاحية. تأكد إنه قواعد الأمان الجديدة انحطت بـ Firestore.',errGeneric:'صار خطأ: {0}',
+eCred:'بيانات الدخول غلط.',eEmail:'الإيميل مش صحيح.',eInUse:'هالاسم أو الإيميل مستعمل من قبل.',eWeak:'كلمة السر لازم 6 أحرف على الأقل.',eNet:'ما في اتصال بالانترنت.',eMany:'محاولات كتيرة، جرّب بعد شوي.',
+csvHead:'الاسم,أيام,ساعات,دقايق تأخير,بدون خروج,المبلغ',repText:'تقرير {0} – {1}',
+privacy:'الخصوصية',consentTitle:'قبل أول تسجيل',consentText:'حاضر بياخد موقعك <b>بس لحظة ما تضغط تسجيل دخول</b>، ليتأكد إنك بالمحل. ما في تتبّع بالخلفية، وما حدا بيشوف موقعك غير المسافة عن المحل عند مديرك.',agree:'موافق، كمّل',
+wd:['أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت']},
+en:{langBtn:'ع',logout:'Log out',loading:'Loading…',
+tStaff:'Staff',tAdmin:'Manager',tNew:'New venue',vcode:'Venue code',uname:'Username',pass:'Password',email:'Email',vname:'Venue name',yname:'Your name',pass6:'Password (6+ characters)',login:'Log in',create:'Create venue',
+fillAll:'Fill in every field; password needs 6+ characters.',notLinked:'This account is not linked to a venue. Create a venue or ask your manager.',suspended:'Your account is paused. Talk to your manager.',
+clockIn:'Clock in',clockOut:'Clock out',inSince:'On shift since {0} ({1})',outShift:'Off shift',checking:'Checking your location…',
+inOk:'Clocked in. Have a great shift!',outOk:'Clocked out. Thanks for your work!',noLoc:'The manager has not set the venue location yet.',far:'You are {0} m from the venue. You need to be within {1} m.',
+geoDenied:'Allow location access for this browser in Settings.',geoFail:'Could not get your location. Turn on Location Services and try again.',offline:'No internet. Connect and try again.',slow:'Weak connection. This will finish when the internet is back.',
+month:'This month',hours:'Hours',days:'Days worked',lateMin:'Late minutes',myShift:'Your shift: {0} – {1}',off:'Off: {0}',history:'My shifts this month',none:'No records yet.',
+edited:'edited',manual:'manual',missing:'no clock-out',late:'late {0}m',now:'now',edit:'Edit',dist:'{0} m',
+staleMine:'A shift on {0} has no clock-out. Your manager will fix it.',a2hs:'To use it like an app: tap Share, then Add to Home Screen.',
+alertBtn:'🔔 Alert manager',alertTitle:'Alert the manager',alertNote:'Details (optional), e.g. table 5',send:'Send',alertSent:'Alert sent to the manager.',alertWait:'Wait a minute before sending another alert.',
+alertPending:'Last alert {0}: waiting for manager',alertAcked:'Last alert {0}: manager got it ✓',
+changePass:'Change password',curPass:'Current password',newPass:'New password (6+ characters)',save:'Save',cancel:'Back',passOk:'Password changed.',
+sShift:'Shift',sLists:'Checklists',open:'Opening',close:'Closing',noItems:'No tasks in this checklist.',doneBy:'{0} · {1}',
+aNow:'Now',aTeam:'Team',aLists:'Lists',aRep:'Report',aSet:'Settings',
+alerts:'Alerts',ack:'Got it',ackedBy:'✓ {0} · {1}',inVenue:'In the venue now ({0})',nobody:'Nobody is in right now.',notArrived:'Not arrived yet ({0})',lateBy:'{0}m late',
+lateToday:'Late today ({0})',noOut:'No clock-out ({0})',noOutHint:'These were counted only up to the cut-off time. Fix them if needed.',fix:'Fix',todayLists:'Today’s checklists',
+code:'Venue code',codeHint:'Staff log in with this code plus their username and password.',shareInvite:'Share',addStaff:'+ New staff member',staffList:'Staff ({0})',inactive:'paused',
+name:'Name',unameHint:'Username (English letters and numbers)',start:'Shift start',end:'Shift end',offDays:'Days off',payType:'Pay type',hourly:'Hourly',monthly:'Monthly salary',rate:'Amount in USD',perHour:'/hr',perMonth:'monthly',
+staffAdded:'Done! Send {0} their login details:',staffBad:'Name is required; username needs 3+ English letters or numbers; password needs 6+ characters.',
+editStaff:'Edit staff member',deactivate:'Pause',activate:'Activate',reissueBtn:'Forgot password',reissue:'New login',reissueHint:'Creates a new username and password for the same person and pauses the old one. Their hours stay together.',newUname:'New username',saved:'Saved.',
+invite:'Hi {0}! Your Hadir login:\nLink: {1}\nVenue code: {2}\nUsername: {3}\nPassword: {4}',inviteCode:'Hadir app: {0}\nVenue code: {1}',copied:'Copied.',
+editList:'Edit checklist',newItem:'New task',add:'Add',archive:'Last 7 days',
+totalHours:'Total hours',totalPay:'Total pay',totalLate:'Late minutes',shareRep:'Share report',csv:'CSV file',
+addManual:'+ Manual entry',editLog:'Edit entry',inTime:'Clock-in time',outTime:'Clock-out time (empty if still on shift)',badTimes:'Clock-out must be after clock-in.',auditTitle:'Edit history',
+location:'Venue location',setLoc:'Use my current location as the venue',locSet:'Venue location is set.',locNot:'Location not set yet. You need to be at the venue.',locOk:'Venue location set.',
+radius:'Allowed distance (m)',grace:'Late grace minutes',cutoff:'Cut-off time (end of business day)',cutoffHint:'After this time, anyone who did not clock out gets no extra hours and shows under “No clock-out”.',
+alertTypes:'Alert types (one per line)',alertTypesShort:'Alert types',editSet:'Edit settings',account:'Account',confirmDeact:'Pause {0}?',
+noStaff:'No staff yet.',permission:'Permission denied. Make sure the new security rules are published in Firestore.',errGeneric:'Something went wrong: {0}',
+eCred:'Wrong login details.',eEmail:'Invalid email.',eInUse:'That username or email is already taken.',eWeak:'Password needs 6+ characters.',eNet:'No internet connection.',eMany:'Too many attempts, try again shortly.',
+csvHead:'Name,Days,Hours,Late minutes,No clock-out,Amount',repText:'{0} report – {1}',
+privacy:'Privacy',consentTitle:'Before your first clock-in',consentText:'Hadir reads your location <b>only at the moment you tap Clock in</b>, to confirm you are at the venue. There is no background tracking; your manager only sees your distance from the venue.',agree:'OK, continue',
+wd:['Sun','Mon','Tue','Wed','Thu','Fri','Sat']}};
+let lang='ar';try{lang=localStorage.getItem('hadir-lang')||'ar'}catch(e){}
+const t=(k,...a)=>{const v=L[lang][k]??L.ar[k]??k;if(Array.isArray(v))return v;let s=String(v);a.forEach((x,i)=>{s=s.split('{'+i+'}').join(String(x))});return s};
+const applyLang=()=>{document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr'};
+applyLang();
+
+/* ---------- helpers ---------- */
 const $=i=>document.getElementById(i);
-const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const tm=t=>new Date(t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-const hm=ms=>Math.floor(ms/36e5)+'س '+Math.floor(ms%36e5/6e4)+'د';
-const ER={'auth/invalid-credential':'بيانات الدخول غلط.','auth/invalid-email':'الإيميل مش صحيح.','auth/email-already-in-use':'هالاسم أو الإيميل مستعمل من قبل.','auth/weak-password':'كلمة السر لازم 6 أحرف على الأقل.','auth/network-request-failed':'ما في اتصال بالانترنت.','auth/too-many-requests':'محاولات كتيرة، جرّب بعد شوي.','permission-denied':'ما عندك صلاحية. تأكد إنه قواعد الأمان انحطت بـ Firestore.'};
-const errT=e=>ER[e.code]||'صار خطأ: '+(e.code||e.message);
-const geoT=e=>e.code===1?'اسمح للمتصفح بالوصول للموقع من الإعدادات.':'ما قدرنا نجيب موقعك. فعّل خدمة الموقع وجرّب مرة تانية.';
-const say=(t,bad)=>{const m=$('msg');m.textContent=t||'';m.className='msg'+(bad?' err':'')};
-
-let U=null,V=null,ME={},logs=[],staff=[],mode='staff',tab='now',un=[],busy=false,creating=false;
-const monthStart=()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),1).getTime()};
-const stop=()=>{un.forEach(f=>f());un=[]};
-const sub=(q,fn)=>un.push(onSnapshot(q,fn,e=>say(errT(e),1)));
-const norm=d=>{const x=d.data({serverTimestamps:'estimate'});return{id:d.id,uid:x.uid,name:x.name,t:x.inAt?x.inAt.toMillis():Date.now(),o:x.outAt?x.outAt.toMillis():0}};
-const LOST=16*36e5;
-
-const getPos=()=>new Promise((ok,no)=>navigator.geolocation?navigator.geolocation.getCurrentPosition(ok,no,{enableHighAccuracy:true,timeout:15000}):no({code:0}));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const hmMin=s=>{const p=String(s||'0:0').split(':').map(Number);return (p[0]||0)*60+(p[1]||0)};
+const tm=ms=>{const d=new Date(ms);return pad(d.getHours())+':'+pad(d.getMinutes())};
+const loc=()=>lang==='ar'?'ar-u-nu-latn':'en-GB';
+const dateS=ms=>new Date(ms).toLocaleDateString(loc(),{weekday:'short',day:'numeric',month:'short'});
+const bdMs=bd=>{const [y,m,d]=bd.split('-').map(Number);return +new Date(y,m-1,d)};
+const bdS=bd=>dateS(bdMs(bd));
+const bdAdd=(bd,k)=>{const [y,m,d]=bd.split('-').map(Number);return ymd(new Date(y,m-1,d+k))};
+const dur=ms=>{ms=Math.max(0,ms);const h=Math.floor(ms/36e5),m=Math.floor(ms%36e5/6e4);return lang==='ar'?`${h}س ${m}د`:`${h}h ${m}m`};
+const money=n=>'$'+(Math.round((n||0)*100)/100).toLocaleString('en-US',{maximumFractionDigits:2});
+const rid=()=>Math.random().toString(36).slice(2,9);
+const toInput=ms=>{const d=new Date(ms);return `${ymd(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}`};
+const daysTxt=n=>lang==='ar'?(n===1?'يوم واحد':n===2?'يومين':(n>=3&&n<=10)?`${n} أيام`:`${n} يوم`):(n===1?'1 day':`${n} days`);
+const offTxt=a=>(a||[]).slice().sort().map(i=>t('wd')[i]).join(lang==='ar'?'، ':', ');
+const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+let sayT=0;
+const say=(x,bad)=>{const m=$('msg');m.textContent=x||'';m.className='msg'+(bad?' err':'');clearTimeout(sayT);if(x&&!bad)sayT=setTimeout(()=>{m.textContent=''},6000)};
+const smsg=x=>{const m=$('smsg');if(m)m.textContent=x||''};
+function errT(e){const c=e&&e.code;if(typeof c==='number')return c===1?t('geoDenied'):t('geoFail');
+  const m={'auth/invalid-credential':'eCred','auth/wrong-password':'eCred','auth/user-not-found':'eCred','auth/invalid-login-credentials':'eCred','auth/invalid-email':'eEmail','auth/email-already-in-use':'eInUse','auth/weak-password':'eWeak','auth/network-request-failed':'eNet','auth/too-many-requests':'eMany','permission-denied':'permission','unavailable':'eNet','timeout':'slow'};
+  return m[c]?t(m[c]):t('errGeneric',c||(e&&e.message)||'?')}
+const withTimeout=(p,ms=15000)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r({code:'timeout'}),ms))]);
+const getPos=()=>new Promise((ok,no)=>navigator.geolocation?navigator.geolocation.getCurrentPosition(ok,no,{enableHighAccuracy:true,timeout:15000,maximumAge:0}):no({code:2}));
 function dist(a,b){const R=6371000,r=Math.PI/180,dl=(b.latitude-a.latitude)*r,dn=(b.longitude-a.longitude)*r;const h=Math.sin(dl/2)**2+Math.cos(a.latitude*r)*Math.cos(b.latitude*r)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 
-function lateMin(x,s){
-  if(!s||!s.start)return 0;
-  const [h,m]=s.start.split(':').map(Number);
-  const c=[-1,0].map(k=>{const z=new Date(x.t);z.setDate(z.getDate()+k);z.setHours(h,m,0,0);return +z});
-  const st=c.reduce((a,b)=>Math.abs(b-x.t)<Math.abs(a-x.t)?b:a);
-  const l=Math.floor((x.t-st)/6e4);
-  return l>(V.grace||0)?l:0;
-}
-function sum(uid){
-  const s=staff.find(z=>z.id===uid)||ME;
-  let ms=0,late=0,open=0;const days=new Set();
-  for(const x of logs.filter(l=>l.uid===uid)){
-    if(x.o)ms+=x.o-x.t;else if(Date.now()-x.t>LOST)open++;else ms+=Date.now()-x.t;
-    days.add(new Date(x.t).toDateString());late+=lateMin(x,s);
-  }
-  return{ms,late,open,days:days.size};
-}
+/* ---------- state ---------- */
+let U=null,V=null,ME={},logs=[],staff=[],alerts=[],checks=[],audit=[];
+let mode='staff',tab='now',stab='shift',ltype='open',un=[],busy=false,creating=false,bootAt=0;
+let repY=new Date().getFullYear(),repM=new Date().getMonth(),repLogs=null,repLogKey='';
+let draft=[],editingLog='',editingStaff='',manualPid='',curPerson='',lastInvite='';
+let lastAlertAt=+(lsGet('hadir-la')||0);
 
-function loginView(){
-  stop();U=V=null;$('out').hidden=true;$('vn').textContent='';
-  const f={
-    staff:'<input id="vc" placeholder="كود المحل" autocapitalize="none"><input id="un" placeholder="اسم المستخدم" autocapitalize="none"><input id="pw" type="password" placeholder="كلمة السر">',
-    admin:'<input id="em" type="email" placeholder="الإيميل"><input id="pw" type="password" placeholder="كلمة السر">',
-    new:'<input id="vn2" placeholder="اسم المحل"><input id="nm" placeholder="اسمك"><input id="em" type="email" placeholder="الإيميل"><input id="pw" type="password" placeholder="كلمة السر (6 أحرف على الأقل)">'
-  }[mode];
-  $('app').innerHTML='<div class="tabs">'+[['staff','موظف'],['admin','مدير'],['new','محل جديد']].map(([k,t])=>'<button data-a="mode" data-k="'+k+'" aria-selected="'+(k===mode)+'">'+t+'</button>').join('')+'</div><div class="card g">'+f+'<button class="btn fill" data-a="'+(mode==='new'?'signup':'login')+'">'+(mode==='new'?'إنشاء المحل':'دخول')+'</button></div>';
-}
+/* ---------- business-day logic ---------- */
+const cutMin=()=>hmMin((V&&V.cutoff)||'05:00');
+function bizDate(ms){const d=new Date(ms);if(d.getHours()*60+d.getMinutes()<cutMin())d.setDate(d.getDate()-1);return ymd(d)}
+function cutoffAt(inMs){const c=cutMin();const b=new Date(inMs+36e5);const x=new Date(b);x.setHours(Math.floor(c/60),c%60,0,0);if(x<b)x.setDate(x.getDate()+1);return +x}
+const isStale=x=>!x.o&&Date.now()>cutoffAt(x.t);
+const effEnd=x=>x.o||Math.min(Date.now(),cutoffAt(x.t));
+function startMoment(bd,s){if(!s||!s.start)return null;const [y,m,d]=bd.split('-').map(Number);const sm=hmMin(s.start);const z=new Date(y,m-1,d,Math.floor(sm/60),sm%60);if(sm<cutMin())z.setDate(z.getDate()+1);return +z}
+function endMoment(bd,s){const st=startMoment(bd,s);if(st==null)return null;let diff=hmMin(s.end||s.start)-hmMin(s.start);if(diff<=0)diff+=1440;return st+diff*6e4}
+function lateMin(x,s){const st=startMoment(bizDate(x.t),s);if(st==null)return 0;const l=Math.floor((x.t-st)/6e4);return l>((V&&V.grace)??10)?l:0}
+function sumLogs(ls,s){let ms=0,late=0,open=0;const days=new Set();for(const x of ls){ms+=Math.max(0,effEnd(x)-x.t);if(isStale(x))open++;days.add(bizDate(x.t));late+=lateMin(x,s)}return{ms,late,open,days:days.size}}
 
-function staffView(){
-  const o=logs.find(x=>!x.o&&Date.now()-x.t<=LOST),m=sum(U.uid);
-  $('app').innerHTML='<button class="big'+(o?' in':'')+'" data-a="punch">'+(o?'تسجيل خروج':'تسجيل دخول')+'</button>'
-   +'<div class="state">'+(o?'داخل الشيفت منذ '+tm(o.t)+' ('+hm(Date.now()-o.t)+')':'خارج الشيفت')+'</div>'
-   +'<div class="card"><h2>هالشهر</h2><div class="row"><span>الساعات</span><b class="num">'+hm(m.ms)+'</b></div><div class="row"><span>أيام العمل</span><b>'+m.days+'</b></div><div class="row"><span>دقايق التأخير</span><b class="num">'+m.late+'</b></div></div>'
-   +'<div class="mute" style="text-align:center;margin-top:12px">شيفتك: '+esc(ME.start||'-')+' – '+esc(ME.end||'-')+'</div>';
-}
+/* ---------- people ---------- */
+const pidOf=s=>s.pid||s.id;
+const persons=()=>staff.filter(s=>!s.merged).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+const uidsOf=p=>staff.filter(s=>pidOf(s)===pidOf(p)).map(s=>s.id);
+const personOfUid=uid=>{const s=staff.find(z=>z.id===uid);if(!s)return null;return staff.find(z=>!z.merged&&pidOf(z)===pidOf(s))||s};
+const nameOf=x=>{const p=personOfUid(x.uid);return p?p.name:(x.name||'')};
+const myName=()=>U.role==='admin'?U.name:(ME.name||U.name);
+const myOpen=()=>logs.find(x=>x.uid===U.uid&&!x.o&&!isStale(x));
 
-function adminView(){
-  const T=[['now','الآن'],['staff','الموظفين'],['rep','التقرير'],['set','الإعدادات']];
-  let b='';
-  if(tab==='now'){
-    const inn=logs.filter(x=>!x.o&&Date.now()-x.t<=LOST),lost=logs.filter(x=>!x.o&&Date.now()-x.t>LOST);
-    b='<div class="card"><h2>الآن بالمحل ('+inn.length+')</h2>'+(inn.length?inn.map(x=>'<div class="row"><span><i class="dot"></i>'+esc(x.name)+'</span><span class="num mute">'+tm(x.t)+'</span></div>').join(''):'<div class="mute">ما حدا بالمحل هلأ.</div>')+'</div>'
-     +(lost.length?'<div class="card"><h2>بدون تسجيل خروج ('+lost.length+')</h2>'+lost.map(x=>'<div class="row"><span>'+esc(x.name)+'</span><span class="num mute">'+tm(x.t)+'</span></div>').join('')+'<div class="mute">هالتسجيلات ما بتنحسب بالساعات.</div></div>':'');
-  }else if(tab==='staff'){
-    b='<div class="card"><h2>كود المحل</h2><div class="num" style="font-size:1.6rem;font-weight:700">'+esc(V.code)+'</div><div class="mute">الموظف بيدخل بالكود مع اسم المستخدم وكلمة السر.</div></div>'
-     +'<div class="card g"><h2 style="margin:0">موظف جديد</h2><input id="sn" placeholder="الاسم"><input id="su" placeholder="اسم المستخدم (حروف إنجليزية وأرقام)" autocapitalize="none"><input id="sp" placeholder="كلمة السر (6 أحرف على الأقل)">'
-     +'<div class="two"><label class="mute">بداية الشيفت<input id="ss" type="time" value="18:00"></label><label class="mute">نهاية الشيفت<input id="se" type="time" value="02:00"></label></div>'
-     +'<select id="st"><option value="hour">بالساعة</option><option value="month">راتب شهري</option></select><input id="sr" type="number" placeholder="المبلغ بالدولار"><button class="btn fill" data-a="addStaff">أضف الموظف</button></div>'
-     +'<div class="card"><h2>الموظفين ('+staff.length+')</h2>'+staff.map(s=>'<div class="row"><span>'+esc(s.name)+'<div class="mute num">'+esc(s.start)+' – '+esc(s.end)+(s.active===false?' (موقوف)':'')+'</div></span><button class="btn" data-a="toggle" data-id="'+s.id+'">'+(s.active===false?'تفعيل':'إيقاف')+'</button></div>').join('')+'</div>';
-  }else if(tab==='rep'){
-    b='<div class="card"><h2>هالشهر</h2>'+(staff.map(s=>{const m=sum(s.id);const amt=s.payType==='hour'?'$'+(m.ms/36e5*(s.rate||0)).toFixed(2):'$'+(s.rate||0)+' شهري';return'<div class="row"><span>'+esc(s.name)+'<div class="mute">'+m.days+' أيام، تأخير '+m.late+' د'+(m.open?'، بدون خروج '+m.open:'')+'</div></span><span style="text-align:end"><b class="num">'+hm(m.ms)+'</b><div class="mute num">'+amt+'</div></span></div>'}).join('')||'<div class="mute">ما في موظفين.</div>')+'</div>';
-  }else{
-    b='<div class="card g"><h2 style="margin:0">إعدادات المحل</h2><button class="btn fill" data-a="setLoc">اعتمد موقعي الحالي كموقع المحل</button><div class="mute">'+(V.lat==null?'لسا ما تحدد الموقع. لازم تكون بالمحل.':'تم تحديد موقع المحل.')+'</div>'
-     +'<label class="mute">المسافة المسموحة (متر)<input id="rd" type="number" value="'+(V.radius||100)+'"></label><label class="mute">دقايق السماح للتأخير<input id="gr" type="number" value="'+(V.grace??10)+'"></label><button class="btn" data-a="saveSet">احفظ</button></div>';
-  }
-  $('app').innerHTML='<div class="tabs">'+T.map(([k,t])=>'<button data-a="tab" data-k="'+k+'" aria-selected="'+(k===tab)+'">'+t+'</button>').join('')+'</div>'+b;
-}
+/* ---------- firestore ---------- */
+const vref=()=>doc(db,'venues',V.id);
+const col=n=>collection(db,'venues',V.id,n);
+const stop=()=>{un.forEach(f=>f());un=[]};
+const sub=(q,fn)=>un.push(onSnapshot(q,fn,e=>say(errT(e),1)));
+const tsMs=v=>v&&v.toMillis?v.toMillis():0;
+const norm=d=>{const x=d.data({serverTimestamps:'estimate'});return{...x,id:d.id,t:tsMs(x.inAt)||Date.now(),o:tsMs(x.outAt)}};
+const nal=d=>{const x=d.data({serverTimestamps:'estimate'});return{...x,id:d.id,at:tsMs(x.at)||Date.now(),ackAt:tsMs(x.ackAt)}};
+const nau=d=>{const x=d.data({serverTimestamps:'estimate'});return{...x,id:d.id,at:tsMs(x.at)||Date.now()}};
+const nck=d=>{const x=d.data({serverTimestamps:'estimate'});const done={};for(const [k,v] of Object.entries(x.done||{}))if(v)done[k]={...v,at:tsMs(v.at)};return{id:d.id,date:x.date,type:x.type,done}};
+function defaultLists(){const D={ar:{open:['تشغيل الإضاءة والموسيقى','ترتيب الطاولات والكراسي','تجهيز البار والثلج','فحص نظافة الحمامات','تشغيل الكاش والـ POS','تجهيز المنيو','بريفينغ سريع للفريق'],close:['عدّ الكاش وتسليم المبلغ','تنظيف البار والطاولات','تسجيل النواقص للطلبية','إطفاء الأجهزة والإضاءة','إقفال الأبواب والتأكد من الأمان']},en:{open:['Lights and music on','Tables and chairs set','Bar stocked and ice ready','Restrooms checked','Cash / POS system on','Menus ready','Quick team briefing'],close:['Cash counted and handed over','Bar and tables cleaned','Out-of-stock items noted','Equipment and lights off','Doors locked, security checked']}}[lang];return{open:D.open.map(x=>({id:'i'+rid(),t:x})),close:D.close.map(x=>({id:'i'+rid(),t:x}))}}
+const defaultAlerts=()=>lang==='ar'?['بدي المدير','مشكلة مع زبون','نقص بضاعة','طوارئ']:['Need manager','Customer issue','Out of stock','Emergency'];
 
-function render(){
-  if(!U)return;
-  const a=document.activeElement;
-  if(U.role==='admin'&&a&&/INPUT|SELECT/.test(a.tagName)&&(tab==='staff'||tab==='set'))return;
-  U.role==='admin'?adminView():staffView();
-}
-setInterval(render,30000);
+/* ---------- sound ---------- */
+let AC=null;
+document.addEventListener('pointerdown',()=>{try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){}},{passive:true});
+function beep(){try{if(AC){[0,.28,.56].forEach(o=>{const g=AC.createGain(),s=AC.createOscillator();s.frequency.value=880;s.connect(g);g.connect(AC.destination);const t0=AC.currentTime+o;g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(.35,t0+.02);g.gain.exponentialRampToValueAtTime(.0001,t0+.22);s.start(t0);s.stop(t0+.24)})}}catch(e){}try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}
 
-async function boot(u){
-  stop();
-  if(!u)return loginView();
-  try{
-    const us=await getDoc(doc(db,'users',u.uid));
-    if(!us.exists()){await signOut(auth);loginView();return say('هالحساب مش مربوط بمحل. أنشئ محل جديد أو اطلب من المدير.',1)}
-    U={uid:u.uid,...us.data()};
-    const vs=await getDoc(doc(db,'venues',U.venueId));
-    V={id:vs.id,...vs.data()};
-    $('out').hidden=false;$('vn').textContent=V.name;say('');
-    sub(doc(db,'venues',V.id),s=>{V={id:s.id,...s.data()};$('vn').textContent=V.name;render()});
-    if(U.role==='admin'){
-      sub(collection(db,'venues',V.id,'staff'),s=>{staff=s.docs.map(d=>({id:d.id,...d.data()}));render()});
-      sub(query(collection(db,'venues',V.id,'logs'),where('inAt','>=',new Date(monthStart()))),s=>{logs=s.docs.map(norm);render()});
-    }else{
-      sub(doc(db,'venues',V.id,'staff',U.uid),s=>{ME=s.data()||{};if(ME.active===false){signOut(auth).then(()=>say('حسابك موقوف. حاكي المدير.',1));return}render()});
-      sub(query(collection(db,'venues',V.id,'logs'),where('uid','==',U.uid)),s=>{logs=s.docs.map(norm).filter(x=>x.t>=monthStart());render()});
-    }
-    render();
-  }catch(e){loginView();say(errT(e),1)}
-}
-onAuthStateChanged(auth,u=>{if(!creating)boot(u)});
+/* ---------- sheet ---------- */
+function openSheet(h){const s=$('sheet');s.innerHTML=`<div class="bd" data-a="closeSheet"></div><div class="sh" role="dialog" aria-modal="true"><button class="x" data-a="closeSheet" aria-label="close">✕</button>${h}<div class="msg err" id="smsg" aria-live="polite"></div></div>`;s.hidden=false;document.body.style.overflow='hidden'}
+function closeSheet(){const s=$('sheet');s.hidden=true;s.innerHTML='';document.body.style.overflow='';curPerson='';render()}
+const sheetOpen=()=>!$('sheet').hidden;
 
-async function doLogin(){
-  const em=mode==='staff'?$('un').value.trim().toLowerCase()+'.'+$('vc').value.trim().toLowerCase()+'@hadir.app':$('em').value.trim();
-  try{await signInWithEmailAndPassword(auth,em,$('pw').value)}catch(e){say(errT(e),1)}
-}
-async function doSignup(){
-  const vn=$('vn2').value.trim(),nm=$('nm').value.trim(),em=$('em').value.trim(),pw=$('pw').value;
-  if(!vn||!nm||!em||pw.length<6)return say('عبّي كل الخانات، وكلمة السر 6 أحرف على الأقل.',1);
-  creating=true;
-  try{
-    let c;
-    try{c=await createUserWithEmailAndPassword(auth,em,pw)}catch(e){if(e.code==='auth/email-already-in-use')c=await signInWithEmailAndPassword(auth,em,pw);else throw e}
+/* ---------- common UI ---------- */
+const tabs=(arr,cur,act)=>`<div class="tabs" role="tablist">${arr.map(([k,l])=>`<button role="tab" data-a="${act}" data-k="${k}" aria-selected="${k===cur}">${l}</button>`).join('')}</div>`;
+function header(){$('vn').textContent=V?V.name:'';$('out').hidden=!U;$('out').textContent=t('logout');$('lng').textContent=t('langBtn')}
+function alertBar(){const b=$('abar');if(!U||U.role!=='admin'){b.hidden=true;return}
+  const u=alerts.filter(a=>!a.ackAt&&Date.now()-a.at<864e5).sort((a,b)=>b.at-a.at);
+  if(!u.length){b.hidden=true;return}const a=u[0];b.hidden=false;
+  b.innerHTML=`<span>🚨 ${esc(a.name)} · ${esc(a.type)}${a.note?': '+esc(a.note):''} <span class="num">${tm(a.at)}</span>${u.length>1?` (+${u.length-1})`:''}</span><button data-a="ack" data-id="${esc(a.id)}">${t('ack')}</button>`}
+function logRow(x,s,ed){const l=lateMin(x,s),b=[];
+  if(isStale(x))b.push(`<span class="badge bad">${t('missing')}</span>`);else if(!x.o)b.push(`<span class="badge ok">${t('now')}</span>`);
+  if(l)b.push(`<span class="badge warn">${t('late',l)}</span>`);if(x.edited)b.push(`<span class="badge">${t('edited')}</span>`);if(x.manual)b.push(`<span class="badge">${t('manual')}</span>`);
+  if(ed&&x.dist!=null)b.push(`<span class="badge">${t('dist',x.dist)}</span>`);
+  return `<div class="row"><div><div>${bdS(bizDate(x.t))}</div><div class="mute"><span class="ltr num">${tm(x.t)} → ${x.o?tm(x.o):'…'}</span>${b.join('')}</div></div><div style="text-align:end"><b class="num">${dur(effEnd(x)-x.t)}</b>${ed?`<div style="margin-top:4px"><button class="btn sm" data-a="editLog" data-id="${esc(x.id)}">${t('edit')}</button></div>`:''}</div></div>`}
+
+/* ---------- login ---------- */
+function loginView(){stop();U=V=null;ME={};logs=[];staff=[];alerts=[];checks=[];audit=[];repLogs=null;header();alertBar();
+  const f={staff:`<input id="vc" placeholder="${t('vcode')}" autocapitalize="none" autocomplete="off"><input id="un" placeholder="${t('uname')}" autocapitalize="none" autocomplete="username"><input id="pw" type="password" placeholder="${t('pass')}" autocomplete="current-password">`,
+  admin:`<input id="em" type="email" placeholder="${t('email')}" autocomplete="email"><input id="pw" type="password" placeholder="${t('pass')}" autocomplete="current-password">`,
+  new:`<input id="vn2" placeholder="${t('vname')}"><input id="nm" placeholder="${t('yname')}"><input id="em" type="email" placeholder="${t('email')}" autocomplete="email"><input id="pw" type="password" placeholder="${t('pass6')}" autocomplete="new-password">`}[mode];
+  $('app').innerHTML=tabs([['staff',t('tStaff')],['admin',t('tAdmin')],['new',t('tNew')]],mode,'mode')+`<div class="card g">${f}<button class="btn fill" data-a="${mode==='new'?'signup':'login'}">${mode==='new'?t('create'):t('login')}</button></div><div class="foot"><a href="privacy.html">${t('privacy')}</a></div>`}
+
+/* ---------- staff ---------- */
+function staffView(){const o=myOpen(),key=bizDate(Date.now()).slice(0,7);
+  let h=tabs([['shift',t('sShift')],['lists',t('sLists')]],stab,'stab');
+  if(stab==='lists'){$('app').innerHTML=h+listsView(false);return}
+  const mine=logs.filter(x=>bizDate(x.t).startsWith(key)).sort((a,b)=>b.t-a.t),m=sumLogs(mine,ME),stale=logs.filter(isStale);
+  h+=`<button class="big${o?' in':''}" data-a="punch">${o?t('clockOut'):t('clockIn')}</button><div class="state">${o?t('inSince',tm(o.t),dur(Date.now()-o.t)):t('outShift')}</div>`;
+  if(o){const la=alerts.slice().sort((a,b)=>b.at-a.at)[0];h+=`<div style="text-align:center;margin-top:14px"><button class="btn bad" data-a="alertSheet">${t('alertBtn')}</button>${la&&Date.now()-la.at<6*36e5?`<div class="mute" style="margin-top:6px">${la.ackAt?t('alertAcked',tm(la.at)):t('alertPending',tm(la.at))}</div>`:''}</div>`}
+  if(stale.length)h+=`<div class="card mute">${t('staleMine',bdS(bizDate(stale[0].t)))}</div>`;
+  if(!isStandalone()&&!lsGet('hadir-d-a2hs'))h+=`<div class="card"><div class="top"><div class="mute">${t('a2hs')}</div><button class="btn sm" data-a="dismiss" data-k="a2hs" aria-label="close">✕</button></div></div>`;
+  h+=`<div class="card"><h2>${t('month')}</h2><div class="kpi"><div><b class="num">${dur(m.ms)}</b><span class="mute">${t('hours')}</span></div><div><b class="num">${m.days}</b><span class="mute">${t('days')}</span></div><div><b class="num">${m.late}</b><span class="mute">${t('lateMin')}</span></div></div><div class="mute" style="margin-top:10px;text-align:center">${t('myShift',`<span class="ltr num">${esc(ME.start||'-')}</span>`,`<span class="ltr num">${esc(ME.end||'-')}</span>`)}${(ME.offDays||[]).length?' · '+t('off',offTxt(ME.offDays)):''}</div></div>`;
+  h+=`<div class="card"><h2>${t('history')}</h2><div class="list">${mine.length?mine.map(x=>logRow(x,ME,false)).join(''):`<div class="mute">${t('none')}</div>`}</div></div>`;
+  h+=`<div style="text-align:center;margin-top:16px"><button class="btn sm" data-a="passSheet">${t('changePass')}</button></div><div class="foot"><a href="privacy.html">${t('privacy')}</a></div>`;
+  $('app').innerHTML=h}
+
+/* ---------- checklists ---------- */
+function listsView(isAdmin){const bd=bizDate(Date.now()),items=(V.lists&&V.lists[ltype])||[];
+  const c=checks.find(z=>z.id===bd+'_'+ltype),done=(c&&c.done)||{};
+  const n=items.filter(i=>done[i.id]).length,pct=items.length?Math.round(n*100/items.length):0;
+  let h=tabs([['open',t('open')],['close',t('close')]],ltype,'ltype');
+  h+=`<div class="card"><div class="top"><h2 style="margin:0">${ltype==='open'?t('open'):t('close')} · ${bdS(bd)}</h2><b class="num">${n}/${items.length}</b></div><div class="bar"><i style="width:${pct}%"></i></div><div class="list" style="margin-top:6px">${items.length?items.map(i=>{const d=done[i.id];return `<button class="item${d?' done':''}" data-a="tick" data-id="${esc(i.id)}"><span class="ck">${d?'✓':''}</span><span><span class="it">${esc(i.t)}</span>${d?`<div class="mute">${t('doneBy',esc(d.name||''),d.at?tm(d.at):'')}</div>`:''}</span></button>`}).join(''):`<div class="mute">${t('noItems')}</div>`}</div></div>`;
+  if(isAdmin){h+=`<button class="btn block" style="margin-top:12px" data-a="listSheet">${t('editList')}</button>`;
+    const cnt=(d,ty)=>{const it=(V.lists&&V.lists[ty])||[];const c2=checks.find(z=>z.id===d+'_'+ty);const dn=(c2&&c2.done)||{};return `${it.filter(i=>dn[i.id]).length}/${it.length}`};
+    const rows=[];for(let k=1;k<=7;k++){const d=bdAdd(bd,-k);rows.push(`<div class="row"><span>${bdS(d)}</span><span class="mute num">${t('open')} ${cnt(d,'open')} · ${t('close')} ${cnt(d,'close')}</span></div>`)}
+    h+=`<div class="card"><h2>${t('archive')}</h2><div class="list">${rows.join('')}</div></div>`}
+  return h}
+function listSheet(){draft=((V.lists&&V.lists[ltype])||[]).map(i=>({...i}));renderListSheet()}
+function renderListSheet(){openSheet(`<h2>${t('editList')} · ${ltype==='open'?t('open'):t('close')}</h2><div class="list">${draft.length?draft.map((i,k)=>`<div class="row"><span style="flex:1">${esc(i.t)}</span><span class="hb"><button class="btn sm" data-a="lmv" data-k="${k}" data-d="-1" aria-label="up">↑</button><button class="btn sm" data-a="lmv" data-k="${k}" data-d="1" aria-label="down">↓</button><button class="btn sm bad" data-a="ldel" data-k="${k}" aria-label="delete">✕</button></span></div>`).join(''):`<div class="mute">${t('noItems')}</div>`}</div><div class="two" style="margin-top:10px"><input id="ni" maxlength="120" placeholder="${t('newItem')}"><button class="btn" data-a="ladd" style="flex:none">${t('add')}</button></div><button class="btn fill block" style="margin-top:12px" data-a="lsave">${t('save')}</button>`)}
+
+/* ---------- admin: now ---------- */
+function viewNow(){const now=Date.now(),today=bizDate(now),g=(V.grace??10);
+  const inn=logs.filter(x=>!x.o&&!isStale(x)).sort((a,b)=>a.t-b.t),lost=logs.filter(isStale).sort((a,b)=>b.t-a.t);
+  const late=logs.filter(x=>bizDate(x.t)===today).map(x=>({x,l:lateMin(x,personOfUid(x.uid))})).filter(z=>z.l>0);
+  const wd=new Date(bdMs(today)).getDay();
+  const na=persons().filter(p=>p.active!==false&&p.start&&!(p.offDays||[]).includes(wd)).map(p=>{const st=startMoment(today,p),en=endMoment(today,p);const u=uidsOf(p);
+    if(logs.some(x=>u.includes(x.uid)&&bizDate(x.t)===today))return null;const l=Math.floor((now-st)/6e4);if(l<=g||now>en)return null;return{p,l}}).filter(Boolean);
+  const al=alerts.filter(a=>now-a.at<864e5).sort((a,b)=>(!!a.ackAt-!!b.ackAt)||(b.at-a.at)).slice(0,8);
+  let h='';
+  if(al.length)h+=`<div class="card"><h2>${t('alerts')}</h2><div class="list">${al.map(a=>`<div class="row"><span><b>${esc(a.name)}</b> · ${esc(a.type)}${a.note?`<div class="mute">${esc(a.note)}</div>`:''}<div class="mute num">${tm(a.at)}</div></span>${a.ackAt?`<span class="mute">${t('ackedBy',esc(a.ackBy||''),tm(a.ackAt))}</span>`:`<button class="btn sm bad fill" data-a="ack" data-id="${esc(a.id)}">${t('ack')}</button>`}</div>`).join('')}</div></div>`;
+  h+=`<div class="card"><h2>${t('inVenue',inn.length)}</h2><div class="list">${inn.length?inn.map(x=>`<div class="row"><span><i class="dot"></i>${esc(nameOf(x))}</span><span class="mute num">${tm(x.t)} · ${dur(now-x.t)}</span></div>`).join(''):`<div class="mute">${t('nobody')}</div>`}</div></div>`;
+  if(na.length)h+=`<div class="card"><h2>${t('notArrived',na.length)}</h2><div class="list">${na.map(z=>`<div class="row"><span>${esc(z.p.name)}<div class="mute ltr num">${esc(z.p.start)}</div></span><span class="badge warn">${t('lateBy',z.l)}</span></div>`).join('')}</div></div>`;
+  if(late.length)h+=`<div class="card"><h2>${t('lateToday',late.length)}</h2><div class="list">${late.map(z=>`<div class="row"><span>${esc(nameOf(z.x))}</span><span class="mute num">${tm(z.x.t)} · <span style="color:var(--warn)">${t('lateBy',z.l)}</span></span></div>`).join('')}</div></div>`;
+  if(lost.length)h+=`<div class="card"><h2>${t('noOut',lost.length)}</h2><div class="list">${lost.map(x=>`<div class="row"><span>${esc(nameOf(x))}<div class="mute">${bdS(bizDate(x.t))} · <span class="num">${tm(x.t)}</span></div></span><button class="btn sm" data-a="editLog" data-id="${esc(x.id)}">${t('fix')}</button></div>`).join('')}</div><div class="mute" style="margin-top:6px">${t('noOutHint')}</div></div>`;
+  const pr=ty=>{const it=(V.lists&&V.lists[ty])||[];const c=checks.find(z=>z.id===today+'_'+ty);const dn=(c&&c.done)||{};const n=it.filter(i=>dn[i.id]).length;const p=it.length?Math.round(n*100/it.length):0;return `<div class="row tap" data-a="goLists" data-k="${ty}"><span style="flex:1">${ty==='open'?t('open'):t('close')}<div class="bar"><i style="width:${p}%"></i></div></span><b class="num">${n}/${it.length}</b></div>`};
+  h+=`<div class="card"><h2>${t('todayLists')}</h2><div class="list">${pr('open')}${pr('close')}</div></div>`;
+  return h}
+
+/* ---------- admin: team ---------- */
+function viewTeam(){const ps=persons(),inU=new Set(logs.filter(x=>!x.o&&!isStale(x)).map(x=>x.uid));
+  return `<div class="card"><h2>${t('code')}</h2><div class="top"><div class="code num ltr">${esc(V.code)}</div><button class="btn sm" data-a="shareCode">${t('shareInvite')}</button></div><div class="mute">${t('codeHint')}</div></div>
+  <button class="btn fill block" style="margin-top:12px" data-a="addSheet">${t('addStaff')}</button>
+  <div class="card"><h2>${t('staffList',ps.length)}</h2><div class="list">${ps.length?ps.map(p=>`<div class="row tap" role="button" tabindex="0" data-a="staffSheet" data-id="${esc(p.id)}"><span>${uidsOf(p).some(u=>inU.has(u))?'<i class="dot"></i>':''}${esc(p.name)}${p.active===false?`<span class="badge">${t('inactive')}</span>`:''}<div class="mute"><span class="ltr num">${esc(p.start||'-')} – ${esc(p.end||'-')}</span>${(p.offDays||[]).length?' · '+t('off',offTxt(p.offDays)):''}</div></span><span class="mute num">${p.payType==='hour'?money(p.rate)+t('perHour'):money(p.rate)+' '+t('perMonth')}</span></div>`).join(''):`<div class="mute">${t('noStaff')}</div>`}</div></div>`}
+function staffForm(p){const od=new Set(p?p.offDays||[]:[]),hour=!p||p.payType==='hour';
+  return `<div class="g"><label class="f">${t('name')}<input id="sn" maxlength="40" value="${esc(p?p.name:'')}"></label>
+  ${p?'':`<label class="f">${t('unameHint')}<input id="su" maxlength="20" autocapitalize="none" autocomplete="off"></label><label class="f">${t('pass6')}<input id="sp" autocomplete="off" autocapitalize="none"></label>`}
+  <div class="two"><label class="f">${t('start')}<input id="ss" type="time" value="${esc(p?p.start:'17:00')}"></label><label class="f">${t('end')}<input id="se" type="time" value="${esc(p?p.end:'02:00')}"></label></div>
+  <div class="f">${t('offDays')}<div class="chips">${t('wd').map((w,i)=>`<button type="button" class="chip od" data-a="chip" data-v="${i}" aria-pressed="${od.has(i)}">${w}</button>`).join('')}</div></div>
+  <div class="two"><label class="f">${t('payType')}<select id="st"><option value="hour"${hour?' selected':''}>${t('hourly')}</option><option value="month"${hour?'':' selected'}>${t('monthly')}</option></select></label><label class="f">${t('rate')}<input id="sr" type="number" inputmode="decimal" min="0" step="0.01" value="${p?esc(p.rate||0):''}"></label></div></div>`}
+const readOd=()=>[...document.querySelectorAll('#sheet .od[aria-pressed="true"]')].map(b=>+b.dataset.v);
+async function makeLogin(u,pw){const a2=initializeApp(cfg,'sec'+Date.now());try{const x=getAuth(a2);const c=await createUserWithEmailAndPassword(x,u+'.'+V.code+'@hadir.app',pw);await signOut(x);return c.user.uid}finally{deleteApp(a2).catch(()=>{})}}
+function showInvite(nm,u,pw){lastInvite=t('invite',nm,APP_URL,V.code,u,pw);openSheet(`<h2>✓</h2><div>${t('staffAdded',esc(nm))}</div><pre class="inv">${esc(lastInvite)}</pre><button class="btn fill block" data-a="shareInvite">${t('shareInvite')}</button>`)}
+async function addStaff(){const nm=$('sn').value.trim(),u=$('su').value.trim().toLowerCase(),pw=$('sp').value,st=$('ss').value,en=$('se').value;
+  if(!nm||!/^[a-z0-9]{3,20}$/.test(u)||pw.length<6||!st||!en)return smsg(t('staffBad'));
+  const od=readOd(),pt=$('st').value,rt=Math.max(0,+$('sr').value||0);
+  const uid=await makeLogin(u,pw);
+  await setDoc(doc(db,'users',uid),{role:'staff',venueId:V.id,name:nm,username:u});
+  await setDoc(doc(db,'venues',V.id,'staff',uid),{name:nm,username:u,start:st,end:en,offDays:od,payType:pt,rate:rt,active:true,pid:uid});
+  showInvite(nm,u,pw)}
+function staffSheet(id){const p=staff.find(s=>s.id===id);if(!p)return;editingStaff=id;
+  openSheet(`<h2>${t('editStaff')}</h2><div class="mute ltr" style="margin-bottom:10px">${esc(p.username||'')}</div>${staffForm(p)}<button class="btn fill block" style="margin-top:12px" data-a="saveStaff">${t('save')}</button><div class="two" style="margin-top:10px"><button class="btn${p.active===false?'':' bad'}" data-a="toggleStaff">${p.active===false?t('activate'):t('deactivate')}</button><button class="btn" data-a="reissueSheet">${t('reissueBtn')}</button></div>`)}
+async function saveStaff(){const p=staff.find(s=>s.id===editingStaff);if(!p)return;const nm=$('sn').value.trim(),st=$('ss').value,en=$('se').value;if(!nm||!st||!en)return smsg(t('fillAll'));
+  await updateDoc(doc(db,'venues',V.id,'staff',p.id),{name:nm,start:st,end:en,offDays:readOd(),payType:$('st').value,rate:Math.max(0,+$('sr').value||0)});closeSheet();say(t('saved'))}
+async function toggleStaff(){const p=staff.find(s=>s.id===editingStaff);if(!p)return;if(p.active!==false&&!confirm(t('confirmDeact',p.name)))return;
+  await updateDoc(doc(db,'venues',V.id,'staff',p.id),{active:p.active===false});closeSheet();say(t('saved'))}
+function reissueSheet(){openSheet(`<h2>${t('reissue')}</h2><div class="mute">${t('reissueHint')}</div><div class="g" style="margin-top:10px"><label class="f">${t('newUname')}<input id="su" maxlength="20" autocapitalize="none" autocomplete="off"></label><label class="f">${t('pass6')}<input id="sp" autocomplete="off" autocapitalize="none"></label><button class="btn fill" data-a="reissue">${t('save')}</button></div>`)}
+async function reissue(){const p=staff.find(s=>s.id===editingStaff);if(!p)return;const u=$('su').value.trim().toLowerCase(),pw=$('sp').value;
+  if(!/^[a-z0-9]{3,20}$/.test(u)||pw.length<6)return smsg(t('staffBad'));
+  const uid=await makeLogin(u,pw);
+  await setDoc(doc(db,'users',uid),{role:'staff',venueId:V.id,name:p.name,username:u});
+  await setDoc(doc(db,'venues',V.id,'staff',uid),{name:p.name,username:u,start:p.start||'',end:p.end||'',offDays:p.offDays||[],payType:p.payType||'hour',rate:p.rate||0,active:true,pid:pidOf(p)});
+  await updateDoc(doc(db,'venues',V.id,'staff',p.id),{active:false,merged:true});
+  showInvite(p.name,u,pw)}
+
+/* ---------- admin: report ---------- */
+const repKey=()=>`${repY}-${pad(repM+1)}`;
+const isCurMonth=()=>{const n=new Date();return repY===n.getFullYear()&&repM===n.getMonth()};
+const monthLabel=()=>new Date(repY,repM,1).toLocaleDateString(loc(),{month:'long',year:'numeric'});
+function repArr(){const k=repKey();if(isCurMonth())return logs.filter(x=>bizDate(x.t).startsWith(k));if(repLogs&&repLogKey===k)return repLogs.filter(x=>bizDate(x.t).startsWith(k));return null}
+async function loadRep(){const k=repKey();if(isCurMonth()||repLogKey===k)return;repLogs=null;repLogKey=k;
+  const s=new Date(repY,repM,1);s.setDate(s.getDate()-1);const e=new Date(repY,repM+1,2);
+  try{const q=await getDocs(query(col('logs'),where('inAt','>=',s),where('inAt','<',e)));if(repLogKey===k){repLogs=q.docs.map(norm);render()}}catch(er){repLogKey='';say(errT(er),1)}}
+function reportRows(){const arr=repArr()||[];return persons().map(p=>{const u=uidsOf(p),ls=arr.filter(x=>u.includes(x.uid));if(p.active===false&&!ls.length)return null;const m=sumLogs(ls,p);const amt=p.payType==='hour'?m.ms/36e5*(p.rate||0):(p.rate||0);return{p,m,amt}}).filter(Boolean)}
+function viewReport(){const nav=`<div class="card mnav"><button class="btn sm" data-a="mprev" aria-label="previous">${lang==='ar'?'›':'‹'}</button><b>${monthLabel()}</b><button class="btn sm" data-a="mnext" aria-label="next"${isCurMonth()?' disabled':''}>${lang==='ar'?'‹':'›'}</button></div>`;
+  if(!repArr()){loadRep();return nav+`<div class="card mute">${t('loading')}</div>`}
+  const rows=reportRows(),tot=rows.reduce((a,r)=>({ms:a.ms+r.m.ms,amt:a.amt+r.amt,late:a.late+r.m.late}),{ms:0,amt:0,late:0});
+  return nav+`<div class="card"><div class="kpi"><div><b class="num">${dur(tot.ms)}</b><span class="mute">${t('totalHours')}</span></div><div><b class="num">${money(tot.amt)}</b><span class="mute">${t('totalPay')}</span></div><div><b class="num">${tot.late}</b><span class="mute">${t('totalLate')}</span></div></div></div>
+  <div class="card"><div class="list">${rows.length?rows.map(r=>`<div class="row tap" role="button" tabindex="0" data-a="person" data-id="${esc(pidOf(r.p))}"><span>${esc(r.p.name)}${r.p.active===false?`<span class="badge">${t('inactive')}</span>`:''}<div class="mute">${daysTxt(r.m.days)} · ${t('late',r.m.late)}${r.m.open?` · <span style="color:var(--bad)">${t('missing')} ${r.m.open}</span>`:''}</div></span><span style="text-align:end"><b class="num">${dur(r.m.ms)}</b><div class="mute num">${money(r.amt)}${r.p.payType==='hour'?'':' '+t('perMonth')}</div></span></div>`).join(''):`<div class="mute">${t('noStaff')}</div>`}</div></div>
+  <div class="two" style="margin-top:12px"><button class="btn" data-a="shareRep">${t('shareRep')}</button><button class="btn" data-a="csv">${t('csv')}</button></div>`}
+const findLog=id=>logs.find(x=>x.id===id)||(repLogs||[]).find(x=>x.id===id);
+function personSheet(pid){const p=persons().find(z=>pidOf(z)===pid)||staff.find(z=>pidOf(z)===pid);if(!p)return;curPerson=pid;const u=uidsOf(p);
+  const ls=(repArr()||[]).filter(x=>u.includes(x.uid)).sort((a,b)=>b.t-a.t),au=audit.filter(a=>u.includes(a.uid)).sort((a,b)=>b.at-a.at).slice(0,20);
+  const fmt=v=>v?`${tm(v.in)}→${v.out?tm(v.out):'…'}`:'';
+  openSheet(`<h2>${esc(p.name)}</h2><div class="mute">${monthLabel()}</div><div class="list" style="margin-top:8px">${ls.length?ls.map(x=>logRow(x,p,true)).join(''):`<div class="mute">${t('none')}</div>`}</div><button class="btn block" style="margin-top:12px" data-a="manualSheet" data-id="${esc(pid)}">${t('addManual')}</button>${au.length?`<h2 style="margin-top:18px">${t('auditTitle')}</h2><div class="list">${au.map(a=>`<div class="row"><div class="mute">${esc(a.by||'')} · ${dateS(a.at)} <span class="num">${tm(a.at)}</span>${a.manual?` · ${t('manual')}`:''}<div class="ltr num">${a.before?fmt(a.before)+'  ⇒  ':''}${fmt(a.after)}</div></div></div>`).join('')}</div>`:''}`)}
+function editLogSheet(id){const x=findLog(id);if(!x)return;editingLog=id;const p=personOfUid(x.uid);
+  const outV=x.o?toInput(x.o):(isStale(x)&&p&&p.end?toInput(endMoment(bizDate(x.t),p)):'');
+  openSheet(`<h2>${t('editLog')}</h2><div class="mute">${esc(nameOf(x))} · ${bdS(bizDate(x.t))}</div><div class="g" style="margin-top:10px"><label class="f">${t('inTime')}<input id="fi" type="datetime-local" value="${toInput(x.t)}"></label><label class="f">${t('outTime')}<input id="fo" type="datetime-local" value="${outV}"></label><div class="two"><button class="btn" data-a="backPerson">${t('cancel')}</button><button class="btn fill" data-a="saveLog">${t('save')}</button></div></div>`)}
+function readTimes(){const fi=$('fi').value,fo=$('fo').value,nt=+new Date(fi),no=fo?+new Date(fo):0;if(!fi||isNaN(nt)||(fo&&(isNaN(no)||no<=nt)))return null;return{nt,no}}
+async function saveLog(){const x=findLog(editingLog);if(!x)return;const r=readTimes();if(!r)return smsg(t('badTimes'));
+  await updateDoc(doc(db,'venues',V.id,'logs',x.id),{inAt:Timestamp.fromMillis(r.nt),outAt:r.no?Timestamp.fromMillis(r.no):null,edited:true});
+  await addDoc(col('audit'),{logId:x.id,uid:x.uid,name:nameOf(x),by:myName(),at:serverTimestamp(),before:{in:x.t,out:x.o||null},after:{in:r.nt,out:r.no||null}});
+  x.t=r.nt;x.o=r.no;x.edited=true;const p=personOfUid(x.uid);say(t('saved'));if(p&&curPerson)personSheet(pidOf(p));else closeSheet()}
+function manualSheet(pid){const p=persons().find(z=>pidOf(z)===pid);if(!p)return;manualPid=pid;curPerson=pid;const bd=bizDate(Date.now());
+  const st=startMoment(bd,p),en=endMoment(bd,p);
+  openSheet(`<h2>${t('addManual')}</h2><div class="mute">${esc(p.name)}</div><div class="g" style="margin-top:10px"><label class="f">${t('inTime')}<input id="fi" type="datetime-local" value="${st?toInput(st):''}"></label><label class="f">${t('outTime')}<input id="fo" type="datetime-local" value="${en?toInput(en):''}"></label><div class="two"><button class="btn" data-a="backPerson">${t('cancel')}</button><button class="btn fill" data-a="saveManual">${t('save')}</button></div></div>`)}
+async function saveManual(){const p=persons().find(z=>pidOf(z)===manualPid);if(!p)return;const r=readTimes();if(!r)return smsg(t('badTimes'));
+  const ref=await addDoc(col('logs'),{uid:p.id,name:p.name,inAt:Timestamp.fromMillis(r.nt),outAt:r.no?Timestamp.fromMillis(r.no):null,manual:true});
+  await addDoc(col('audit'),{logId:ref.id,uid:p.id,name:p.name,by:myName(),at:serverTimestamp(),before:null,after:{in:r.nt,out:r.no||null},manual:true});
+  if(repLogs&&!isCurMonth())repLogs.push({id:ref.id,uid:p.id,name:p.name,t:r.nt,o:r.no,manual:true});
+  say(t('saved'));personSheet(manualPid)}
+async function shareText(x){try{if(navigator.share){await navigator.share({text:x});return}}catch(e){if(e&&e.name==='AbortError')return}
+  try{await navigator.clipboard.writeText(x);say(t('copied'))}catch(e){window.prompt('',x)}}
+function shareRep(){const rows=reportRows();shareText([t('repText',V.name,monthLabel())].concat(rows.map(r=>`${r.p.name}: ${dur(r.m.ms)} · ${daysTxt(r.m.days)} · ${t('late',r.m.late)}${r.m.open?` · ${t('missing')} ${r.m.open}`:''} · ${money(r.amt)}`)).join('\n'))}
+function exportCSV(){const q=v=>{const s=String(v);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+  const lines=[t('csvHead')].concat(reportRows().map(r=>[r.p.name,r.m.days,(r.m.ms/36e5).toFixed(2),r.m.late,r.m.open,r.amt.toFixed(2)].map(q).join(',')));
+  const name=`hadir-${repKey()}.csv`,blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
+  try{const f=new File([blob],name,{type:'text/csv'});if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f]}).catch(()=>{});return}}catch(e){}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
+
+/* ---------- admin: settings ---------- */
+function viewSettings(){return `<div class="card"><h2>${esc(V.name)}</h2><div class="list">
+  <div class="row"><span>${t('radius')}</span><b class="num">${V.radius??100}</b></div>
+  <div class="row"><span>${t('grace')}</span><b class="num">${V.grace??10}</b></div>
+  <div class="row"><span>${t('cutoff')}</span><b class="num ltr">${esc(V.cutoff||'05:00')}</b></div>
+  <div class="row"><span>${t('alertTypesShort')}</span><span class="mute" style="text-align:end">${(V.alertTypes||[]).map(esc).join(lang==='ar'?'، ':', ')}</span></div></div>
+  <button class="btn block" style="margin-top:10px" data-a="setSheet">${t('editSet')}</button></div>
+  <div class="card g"><h2 style="margin:0">${t('location')}</h2><div class="mute">${V.lat==null?t('locNot'):t('locSet')}</div><button class="btn fill" data-a="setLoc">${t('setLoc')}</button></div>
+  <div class="card g"><h2 style="margin:0">${t('account')}</h2><div class="mute ltr">${esc((auth.currentUser&&auth.currentUser.email)||'')}</div><button class="btn" data-a="passSheet">${t('changePass')}</button><a href="privacy.html" style="text-align:center">${t('privacy')}</a></div>`}
+function setSheet(){openSheet(`<h2>${t('editSet')}</h2><div class="g"><label class="f">${t('vname')}<input id="xn" maxlength="40" value="${esc(V.name)}"></label><div class="two"><label class="f">${t('radius')}<input id="rd" type="number" inputmode="numeric" value="${V.radius??100}"></label><label class="f">${t('grace')}<input id="gr" type="number" inputmode="numeric" value="${V.grace??10}"></label></div><label class="f">${t('cutoff')}<input id="co" type="time" value="${esc(V.cutoff||'05:00')}"></label><div class="mute">${t('cutoffHint')}</div><label class="f">${t('alertTypes')}<textarea id="at">${esc((V.alertTypes||[]).join('\n'))}</textarea></label><button class="btn fill" data-a="saveSet">${t('save')}</button></div>`)}
+async function saveSet(){const nm=$('xn').value.trim()||V.name,r=Math.min(2000,Math.max(20,+$('rd').value||100)),g=Math.min(120,Math.max(0,+$('gr').value||0)),co=$('co').value||'05:00';
+  const at=$('at').value.split('\n').map(s=>s.trim()).filter(Boolean).slice(0,8);
+  await updateDoc(vref(),{name:nm,radius:r,grace:g,cutoff:co,alertTypes:at.length?at:defaultAlerts()});closeSheet();say(t('saved'))}
+async function setLoc(){const c=(await getPos()).coords;await withTimeout(updateDoc(vref(),{lat:c.latitude,lng:c.longitude}));say(t('locOk'))}
+
+/* ---------- shared actions ---------- */
+function passSheet(){openSheet(`<h2>${t('changePass')}</h2><div class="g"><input id="cp" type="password" placeholder="${t('curPass')}" autocomplete="current-password"><input id="np" type="password" placeholder="${t('newPass')}" autocomplete="new-password"><button class="btn fill" data-a="changePass">${t('save')}</button></div>`)}
+async function changePass(){const cur=$('cp').value,nw=$('np').value;if(!cur||nw.length<6)return smsg(t('eWeak'));const u=auth.currentUser;
+  await reauthenticateWithCredential(u,EmailAuthProvider.credential(u.email,cur));await updatePassword(u,nw);closeSheet();say(t('passOk'))}
+function consentSheet(){openSheet(`<h2>${t('consentTitle')}</h2><p>${t('consentText')}</p><p><a href="privacy.html">${t('privacy')}</a></p><button class="btn fill block" data-a="consentOk">${t('agree')}</button>`)}
+async function punch(){if(!navigator.onLine)return say(t('offline'),1);const o=myOpen();if(!o&&!lsGet('hadir-consent')){consentSheet();return}
+  if(o){await withTimeout(updateDoc(doc(db,'venues',V.id,'logs',o.id),{outAt:serverTimestamp()}));return say(t('outOk'))}
+  if(V.lat==null)return say(t('noLoc'),1);say(t('checking'));
+  const c=(await getPos()).coords,d=Math.round(dist(c,{latitude:V.lat,longitude:V.lng})),acc=Math.round(c.accuracy||0),R=V.radius??100;
+  if(d-Math.min(acc,75)>R)return say(t('far',d,R),1);
+  await withTimeout(addDoc(col('logs'),{uid:U.uid,name:myName(),inAt:serverTimestamp(),outAt:null,dist:d,acc}));say(t('inOk'))}
+function alertSheet(){const ty=(V.alertTypes&&V.alertTypes.length)?V.alertTypes:defaultAlerts();
+  openSheet(`<h2>${t('alertTitle')}</h2><div class="chips">${ty.map((x,i)=>`<button type="button" class="chip ach" data-a="achip" data-v="${esc(x)}" aria-pressed="${i===0}">${esc(x)}</button>`).join('')}</div><input id="an" style="margin-top:10px" maxlength="120" placeholder="${t('alertNote')}"><button class="btn bad fill block" style="margin-top:12px" data-a="sendAlert">${t('send')}</button>`)}
+async function sendAlert(){if(Date.now()-lastAlertAt<6e4)return smsg(t('alertWait'));const o=myOpen();if(!o){closeSheet();return}
+  const sel=document.querySelector('#sheet .ach[aria-pressed="true"]'),type=sel?sel.dataset.v:defaultAlerts()[0];
+  await withTimeout(addDoc(col('alerts'),{uid:U.uid,name:myName(),type,note:$('an').value.trim().slice(0,120),logId:o.id,at:serverTimestamp(),ackAt:null}));
+  lastAlertAt=Date.now();lsSet('hadir-la',String(lastAlertAt));closeSheet();say(t('alertSent'))}
+async function tick(b){const id=b.dataset.id,bd=bizDate(Date.now()),did=bd+'_'+ltype,c=checks.find(z=>z.id===did),on=!!(c&&c.done&&c.done[id]);
+  await setDoc(doc(db,'venues',V.id,'checks',did),{date:bd,type:ltype,done:{[id]:on?deleteField():{by:U.uid,name:myName(),at:serverTimestamp()}}},{merge:true})}
+async function doLogin(){const em=mode==='staff'?$('un').value.trim().toLowerCase()+'.'+$('vc').value.trim().toLowerCase()+'@hadir.app':$('em').value.trim();await signInWithEmailAndPassword(auth,em,$('pw').value)}
+async function doSignup(){const vn=$('vn2').value.trim(),nm=$('nm').value.trim(),em=$('em').value.trim(),pw=$('pw').value;
+  if(!vn||!nm||!em||pw.length<6)return say(t('fillAll'),1);creating=true;
+  try{let c;try{c=await createUserWithEmailAndPassword(auth,em,pw)}catch(e){if(e.code==='auth/email-already-in-use')c=await signInWithEmailAndPassword(auth,em,pw);else throw e}
     const ex=await getDoc(doc(db,'users',c.user.uid));
-    if(!ex.exists()){
-      const code=Array.from({length:6},()=>'abcdefghjkmnpqrstuvwxyz23456789'[Math.random()*31|0]).join('');
-      const v=await addDoc(collection(db,'venues'),{name:vn,code,ownerUid:c.user.uid,lat:null,lng:null,radius:100,grace:10});
-      await setDoc(doc(db,'users',c.user.uid),{role:'admin',venueId:v.id,name:nm});
-    }
-    creating=false;await boot(c.user);
-  }catch(e){creating=false;say(errT(e),1)}
-}
-async function punch(){
-  const o=logs.find(x=>!x.o&&Date.now()-x.t<=LOST);
-  try{
-    if(o){await updateDoc(doc(db,'venues',V.id,'logs',o.id),{outAt:serverTimestamp()});return say('تم تسجيل الخروج. الله يعطيك العافية!')}
-    if(V.lat==null)return say('المدير لسا ما حدد موقع المحل.',1);
-    say('عم نتحقق من موقعك…');
-    const d=Math.round(dist((await getPos()).coords,{latitude:V.lat,longitude:V.lng}));
-    if(d>V.radius)return say('إنت بعيد '+d+' متر عن المحل. لازم تكون ضمن '+V.radius+' متر.',1);
-    await addDoc(collection(db,'venues',V.id,'logs'),{uid:U.uid,name:U.name,inAt:serverTimestamp(),outAt:null});
-    say('تم تسجيل الدخول. شيفت موفق!');
-  }catch(e){say(typeof e.code==='number'?geoT(e):errT(e),1)}
-}
-async function addStaff(){
-  const nm=$('sn').value.trim(),u=$('su').value.trim().toLowerCase(),pw=$('sp').value,st=$('ss').value,en=$('se').value,pt=$('st').value,rt=+$('sr').value||0;
-  if(!nm||!/^[a-z0-9]{3,}$/.test(u)||pw.length<6||!st||!en)return say('الاسم مطلوب، واسم المستخدم 3 حروف إنجليزية أو أرقام على الأقل، وكلمة السر 6 أحرف.',1);
-  const app2=initializeApp(cfg,'sec'+Date.now());
-  try{
-    const a2=getAuth(app2);
-    const c=await createUserWithEmailAndPassword(a2,u+'.'+V.code+'@hadir.app',pw);
-    await signOut(a2);
-    await setDoc(doc(db,'users',c.user.uid),{role:'staff',venueId:V.id,name:nm,username:u});
-    await setDoc(doc(db,'venues',V.id,'staff',c.user.uid),{name:nm,username:u,start:st,end:en,payType:pt,rate:rt,active:true});
-    say('انضاف الموظف '+nm+'.');
-  }catch(e){say(errT(e),1)}
-  finally{deleteApp(app2)}
-}
-async function toggle(b){
-  const s=staff.find(x=>x.id===b.dataset.id);
-  try{await updateDoc(doc(db,'venues',V.id,'staff',s.id),{active:s.active===false})}catch(e){say(errT(e),1)}
-}
-async function setLoc(){
-  try{const c=(await getPos()).coords;await updateDoc(doc(db,'venues',V.id),{lat:c.latitude,lng:c.longitude});say('تم تحديد موقع المحل.')}
-  catch(e){say(typeof e.code==='number'?geoT(e):errT(e),1)}
-}
-async function saveSet(){
-  const r=Math.max(20,+$('rd').value||100),g=Math.max(0,+$('gr').value||0);
-  try{await updateDoc(doc(db,'venues',V.id),{radius:r,grace:g});say('انحفظت الإعدادات.')}catch(e){say(errT(e),1)}
-}
+    if(!ex.exists()){const code=Array.from({length:6},()=>'abcdefghjkmnpqrstuvwxyz23456789'[Math.random()*31|0]).join('');
+      const v=await addDoc(collection(db,'venues'),{name:vn,code,ownerUid:c.user.uid,lat:null,lng:null,radius:100,grace:10,cutoff:'05:00',lists:defaultLists(),alertTypes:defaultAlerts()});
+      await setDoc(doc(db,'users',c.user.uid),{role:'admin',venueId:v.id,name:nm})}
+    creating=false;await boot(c.user)}catch(e){creating=false;throw e}}
 
-const guard=f=>async b=>{if(busy)return;busy=true;b.disabled=true;try{await f(b)}finally{busy=false;b.disabled=false}};
+/* ---------- render / boot ---------- */
+function render(){header();alertBar();if(!U)return;const a=document.activeElement;if(a&&$('app').contains(a)&&/INPUT|SELECT|TEXTAREA/.test(a.tagName))return;
+  if(U.role==='admin'){const T=[['now',t('aNow')],['team',t('aTeam')],['lists',t('aLists')],['rep',t('aRep')],['set',t('aSet')]];
+    const body={now:viewNow,team:viewTeam,lists:()=>listsView(true),rep:viewReport,set:viewSettings}[tab]();$('app').innerHTML=tabs(T,tab,'tab')+body}
+  else staffView()}
+async function boot(u){stop();if(!u)return loginView();
+  try{const us=await getDoc(doc(db,'users',u.uid));if(!us.exists()){await signOut(auth);loginView();return say(t('notLinked'),1)}
+    U={uid:u.uid,...us.data()};const vs=await getDoc(doc(db,'venues',U.venueId));V={id:vs.id,...vs.data()};bootAt=Date.now();say('');
+    sub(vref(),s=>{if(s.exists()){V={id:s.id,...s.data()};render()}});
+    if(U.role==='admin'){const patch={};if(V.cutoff==null)patch.cutoff='05:00';if(V.grace==null)patch.grace=10;if(V.radius==null)patch.radius=100;if(!V.lists)patch.lists=defaultLists();if(!V.alertTypes)patch.alertTypes=defaultAlerts();
+      if(Object.keys(patch).length){Object.assign(V,patch);updateDoc(vref(),patch).catch(e=>say(errT(e),1))}
+      sub(col('staff'),s=>{staff=s.docs.map(d=>({...d.data(),id:d.id}));render()});
+      const n=new Date(),ls=new Date(n.getFullYear(),n.getMonth(),1);ls.setDate(ls.getDate()-2);
+      sub(query(col('logs'),where('inAt','>=',ls)),s=>{logs=s.docs.map(norm);render()});
+      sub(query(col('alerts'),where('at','>=',new Date(Date.now()-864e5))),s=>{s.docChanges().forEach(c=>{if(c.type==='added'){const a=nal(c.doc);if(!a.ackAt&&a.at>bootAt-5000)beep()}});alerts=s.docs.map(nal);render()});
+      const d9=new Date();d9.setDate(d9.getDate()-9);
+      sub(query(col('checks'),where('date','>=',ymd(d9))),s=>{checks=s.docs.map(nck);render()});
+      sub(query(col('audit'),where('at','>=',new Date(Date.now()-70*864e5))),s=>{audit=s.docs.map(nau);if(curPerson&&sheetOpen()&&document.activeElement===document.body)personSheet(curPerson)});
+    }else{
+      sub(doc(db,'venues',V.id,'staff',U.uid),s=>{ME=s.data()||{};if(ME.active===false){signOut(auth).then(()=>say(t('suspended'),1));return}render()});
+      sub(query(col('logs'),where('uid','==',U.uid)),s=>{logs=s.docs.map(norm);render()});
+      sub(query(col('alerts'),where('uid','==',U.uid)),s=>{alerts=s.docs.map(nal);render()});
+      const d2=new Date();d2.setDate(d2.getDate()-2);
+      sub(query(col('checks'),where('date','>=',ymd(d2))),s=>{checks=s.docs.map(nck);render()});
+    }
+    render()}catch(e){loginView();say(errT(e),1)}}
+onAuthStateChanged(auth,u=>{if(!creating)boot(u)});
+setInterval(render,30000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&U&&Date.now()-bootAt>12*36e5)boot(auth.currentUser);else if(document.visibilityState==='visible')render()});
+
+/* ---------- actions ---------- */
+const guard=f=>async b=>{if(busy)return;busy=true;if(b)b.disabled=true;try{await f(b)}catch(e){const m=errT(e);if(sheetOpen()&&$('smsg'))smsg(m);else say(m,1)}finally{busy=false;if(b&&b.isConnected)b.disabled=false}};
 const A={
+  lang:()=>{lang=lang==='ar'?'en':'ar';lsSet('hadir-lang',lang);applyLang();if(sheetOpen())closeSheet();U?render():loginView()},
+  logout:()=>{closeSheet();signOut(auth)},
   mode:b=>{mode=b.dataset.k;say('');loginView()},
-  tab:b=>{tab=b.dataset.k;render()},
+  tab:b=>{tab=b.dataset.k;render();scrollTo(0,0)},
+  stab:b=>{stab=b.dataset.k;render()},
+  ltype:b=>{ltype=b.dataset.k;render()},
+  goLists:b=>{ltype=b.dataset.k;tab='lists';render();scrollTo(0,0)},
+  dismiss:b=>{lsSet('hadir-d-'+b.dataset.k,'1');render()},
+  closeSheet:()=>closeSheet(),
+  chip:b=>b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')!=='true'),
+  achip:b=>{document.querySelectorAll('#sheet .ach').forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true')},
   login:guard(doLogin),signup:guard(doSignup),punch:guard(punch),
-  addStaff:guard(addStaff),toggle:guard(toggle),setLoc:guard(setLoc),saveSet:guard(saveSet)
+  tick:guard(tick),listSheet:()=>listSheet(),
+  lmv:b=>{const k=+b.dataset.k,d=+b.dataset.d,j=k+d;if(j<0||j>=draft.length)return;[draft[k],draft[j]]=[draft[j],draft[k]];renderListSheet()},
+  ldel:b=>{draft.splice(+b.dataset.k,1);renderListSheet()},
+  ladd:()=>{const v=$('ni').value.trim();if(!v)return;draft.push({id:'i'+rid(),t:v.slice(0,120)});renderListSheet();setTimeout(()=>{const n=$('ni');if(n)n.focus()},0)},
+  lsave:guard(async()=>{await updateDoc(vref(),{['lists.'+ltype]:draft});closeSheet();say(t('saved'))}),
+  ack:guard(async b=>{await updateDoc(doc(db,'venues',V.id,'alerts',b.dataset.id),{ackAt:serverTimestamp(),ackBy:myName()})}),
+  shareCode:()=>shareText(t('inviteCode',APP_URL,V.code)),
+  shareInvite:()=>shareText(lastInvite),
+  addSheet:()=>openSheet(`<h2>${t('addStaff').replace('+ ','')}</h2>${staffForm(null)}<button class="btn fill block" style="margin-top:12px" data-a="addStaff">${t('save')}</button>`),
+  addStaff:guard(addStaff),staffSheet:b=>staffSheet(b.dataset.id),saveStaff:guard(saveStaff),toggleStaff:guard(toggleStaff),
+  reissueSheet:()=>reissueSheet(),reissue:guard(reissue),
+  mprev:()=>{repM--;if(repM<0){repM=11;repY--}render()},
+  mnext:()=>{if(isCurMonth())return;repM++;if(repM>11){repM=0;repY++}render()},
+  person:b=>personSheet(b.dataset.id),editLog:b=>editLogSheet(b.dataset.id),saveLog:guard(saveLog),
+  manualSheet:b=>manualSheet(b.dataset.id),saveManual:guard(saveManual),
+  backPerson:()=>{curPerson?personSheet(curPerson):closeSheet()},
+  shareRep:()=>shareRep(),csv:()=>exportCSV(),
+  setSheet:()=>setSheet(),saveSet:guard(saveSet),setLoc:guard(setLoc),
+  passSheet:()=>passSheet(),changePass:guard(changePass),
+  alertSheet:()=>alertSheet(),sendAlert:guard(sendAlert),
+  consentOk:()=>{lsSet('hadir-consent','1');closeSheet();A.punch(null)}
 };
-document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b&&A[b.dataset.a])A[b.dataset.a](b)});
-$('out').onclick=()=>signOut(auth);
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b&&A[b.dataset.a]){e.preventDefault();A[b.dataset.a](b)}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('[role=button]')){e.preventDefault();e.target.click();return}
+  if(e.key==='Enter'&&e.target.id==='ni'){e.preventDefault();A.ladd();return}
+  if(e.key==='Enter'&&e.target.tagName==='INPUT'){const f=e.target.closest('#app,#sheet');const btn=f&&f.querySelector('.btn.fill:not([disabled])');if(btn){e.preventDefault();btn.click()}}
+  if(e.key==='Escape'&&sheetOpen())closeSheet()});
 </script>
 </body>
 </html>
