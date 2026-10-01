@@ -86,6 +86,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 a{color:var(--brand)}
 .foot{text-align:center;margin-top:18px;font-size:.88rem}
+@keyframes sp{to{transform:rotate(360deg)}}
+.spin{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 10px}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -106,15 +108,16 @@ a{color:var(--brand)}
 <script type="module">
 import {initializeApp,deleteApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,EmailAuthProvider,reauthenticateWithCredential,updatePassword} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {getFirestore,doc,getDoc,getDocs,setDoc,updateDoc,addDoc,collection,query,where,onSnapshot,serverTimestamp,Timestamp,deleteField,writeBatch} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {getFirestore,initializeFirestore,persistentLocalCache,persistentMultipleTabManager,doc,getDoc,getDocs,setDoc,updateDoc,addDoc,collection,query,where,onSnapshot,serverTimestamp,Timestamp,deleteField,writeBatch} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const cfg={apiKey:"AIzaSyCauWSs3cZKIsUmWynizn0AVPget9IeKt8",authDomain:"hadir-69322.firebaseapp.com",projectId:"hadir-69322",storageBucket:"hadir-69322.firebasestorage.app",messagingSenderId:"1073180364182",appId:"1:1073180364182:web:d7a3e145a678e5d195e1b7"};
-const app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
+const app=initializeApp(cfg),auth=getAuth(app);
+let db;try{db=initializeFirestore(app,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})})}catch(e){db=getFirestore(app)}
 const APP_URL=location.href.split('#')[0].split('?')[0].replace(/index\.html$/,'');
 
 /* ---------- i18n ---------- */
 const L={
-ar:{langBtn:'EN',logout:'خروج',loading:'جاري التحميل…',
+ar:{langBtn:'EN',logout:'خروج',loading:'جاري التحميل…',signingIn:'جاري الدخول…',
 tStaff:'موظف',tAdmin:'مدير',tNew:'محل جديد',vcode:'كود المحل',uname:'اسم المستخدم',pass:'كلمة السر',email:'الإيميل',vname:'اسم المحل',yname:'اسمك',pass6:'كلمة السر (6 أحرف على الأقل)',login:'دخول',create:'إنشاء المحل',
 fillAll:'عبّي كل الخانات، وكلمة السر 6 أحرف على الأقل.',notLinked:'هالحساب مش مربوط بمحل. أنشئ محل جديد أو اطلب من المدير.',suspended:'حسابك موقوف. حاكي المدير.',
 clockIn:'تسجيل دخول',clockOut:'تسجيل خروج',inSince:'داخل الشيفت منذ {0} ({1})',outShift:'خارج الشيفت',checking:'عم نتحقق من موقعك…',
@@ -146,7 +149,7 @@ eCred:'بيانات الدخول غلط.',eEmail:'الإيميل مش صحيح.'
 csvHead:'الاسم,أيام,ساعات,دقايق تأخير,بدون خروج,المبلغ',repText:'تقرير {0} – {1}',
 privacy:'الخصوصية',pingAll:'📣 للكل',pingTo:'رسالة لـ {0}',pingAllTitle:'رسالة لكل الموجودين ({0})',pingNote:'تفاصيل (اختياري)',pingSent:'انبعتت الرسالة.',seen:'تمام',pingTypes:'رسائل المدير (كل سطر رسالة)',pingTypesShort:'رسائل المدير',fromMgr:'📣 {0}',consentTitle:'قبل أول تسجيل',consentText:'حاضر بياخد موقعك <b>بس لحظة ما تضغط تسجيل دخول</b>، ليتأكد إنك بالمحل. ما في تتبّع بالخلفية، وما حدا بيشوف موقعك غير المسافة عن المحل عند مديرك.',agree:'موافق، كمّل',
 wd:['أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت']},
-en:{langBtn:'ع',logout:'Log out',loading:'Loading…',
+en:{langBtn:'ع',logout:'Log out',loading:'Loading…',signingIn:'Signing in…',
 tStaff:'Staff',tAdmin:'Manager',tNew:'New venue',vcode:'Venue code',uname:'Username',pass:'Password',email:'Email',vname:'Venue name',yname:'Your name',pass6:'Password (6+ characters)',login:'Log in',create:'Create venue',
 fillAll:'Fill in every field; password needs 6+ characters.',notLinked:'This account is not linked to a venue. Create a venue or ask your manager.',suspended:'Your account is paused. Talk to your manager.',
 clockIn:'Clock in',clockOut:'Clock out',inSince:'On shift since {0} ({1})',outShift:'Off shift',checking:'Checking your location…',
@@ -460,7 +463,11 @@ async function sendAlert(){if(Date.now()-lastAlertAt<6e4)return smsg(t('alertWai
   lastAlertAt=Date.now();lsSet('hadir-la',String(lastAlertAt));closeSheet();say(t('alertSent'))}
 async function tick(b){const id=b.dataset.id,bd=bizDate(Date.now()),did=bd+'_'+ltype,c=checks.find(z=>z.id===did),on=!!(c&&c.done&&c.done[id]);
   await setDoc(doc(db,'venues',V.id,'checks',did),{date:bd,type:ltype,done:{[id]:on?deleteField():{by:U.uid,name:myName(),at:serverTimestamp()}}},{merge:true})}
-async function doLogin(){const em=mode==='staff'?$('un').value.trim().toLowerCase()+'.'+$('vc').value.trim().toLowerCase()+'@hadir.app':$('em').value.trim();await signInWithEmailAndPassword(auth,em,$('pw').value)}
+const loadingView=()=>{$('app').innerHTML=`<div class="card" style="text-align:center;padding:28px"><div class="spin"></div><div class="mute">${t('signingIn')}</div></div>`};
+async function doLogin(){const em=mode==='staff'?$('un').value.trim().toLowerCase()+'.'+$('vc').value.trim().toLowerCase()+'@hadir.app':$('em').value.trim(),pw=$('pw').value;
+  const keep={vc:$('vc')&&$('vc').value,un:$('un')&&$('un').value,em:$('em')&&$('em').value};
+  if(!em||!pw)return say(t('fillAll'),1);say('');loadingView();
+  try{await signInWithEmailAndPassword(auth,em,pw)}catch(e){loginView();Object.entries(keep).forEach(([k,v])=>{if(v&&$(k))$(k).value=v});throw e}}
 async function doSignup(){const vn=$('vn2').value.trim(),nm=$('nm').value.trim(),em=$('em').value.trim(),pw=$('pw').value;
   if(!vn||!nm||!em||pw.length<6)return say(t('fillAll'),1);creating=true;
   try{let c;try{c=await createUserWithEmailAndPassword(auth,em,pw)}catch(e){if(e.code==='auth/email-already-in-use')c=await signInWithEmailAndPassword(auth,em,pw);else throw e}
@@ -475,10 +482,20 @@ function render(){header();alertBar();if(!U)return;const a=document.activeElemen
   if(U.role==='admin'){const T=[['now',t('aNow')],['team',t('aTeam')],['lists',t('aLists')],['rep',t('aRep')],['set',t('aSet')]];
     const body={now:viewNow,team:viewTeam,lists:()=>listsView(true),rep:viewReport,set:viewSettings}[tab]();$('app').innerHTML=tabs(T,tab,'tab')+body}
   else staffView()}
-async function boot(u){stop();if(!u)return loginView();
-  try{const us=await getDoc(doc(db,'users',u.uid));if(!us.exists()){await signOut(auth);loginView();return say(t('notLinked'),1)}
-    U={uid:u.uid,...us.data()};const vs=await getDoc(doc(db,'venues',U.venueId));V={id:vs.id,...vs.data()};bootAt=Date.now();say('');
-    sub(vref(),s=>{if(s.exists()){V={id:s.id,...s.data()};render()}});
+let bootSeq=0;
+const clearSessions=()=>{try{Object.keys(localStorage).filter(k=>k.startsWith('hadir-s-')).forEach(k=>localStorage.removeItem(k))}catch(e){}};
+const saveSession=()=>{if(U&&V)lsSet('hadir-s-'+U.uid,JSON.stringify({U,V}))};
+async function boot(u){stop();const my=++bootSeq;if(!u){clearSessions();return loginView()}
+  let c=null;try{c=JSON.parse(lsGet('hadir-s-'+u.uid)||'null')}catch(e){}
+  if(c&&c.U&&c.V&&c.U.uid===u.uid){start(c.U,c.V);
+    getDoc(doc(db,'users',u.uid)).then(us=>{if(my!==bootSeq)return;if(!us.exists()){clearSessions();signOut(auth);return}const nu={uid:u.uid,...us.data()};
+      if(nu.venueId!==c.U.venueId||nu.role!==c.U.role){lsSet('hadir-s-'+u.uid,'');boot(u)}else{U=nu;saveSession()}}).catch(()=>{});return}
+  loadingView();
+  try{const us=await getDoc(doc(db,'users',u.uid));if(my!==bootSeq)return;if(!us.exists()){await signOut(auth);loginView();return say(t('notLinked'),1)}
+    const U0={uid:u.uid,...us.data()};const vs=await getDoc(doc(db,'venues',U0.venueId));if(my!==bootSeq)return;
+    start(U0,{id:vs.id,...vs.data()});saveSession()}catch(e){if(my!==bootSeq)return;loginView();say(errT(e),1)}}
+function start(U0,V0){stop();U=U0;V=V0;bootAt=Date.now();say('');
+    sub(vref(),s=>{if(s.exists()){V={id:s.id,...s.data()};saveSession();render()}});
     if(U.role==='admin'){const patch={};if(V.cutoff==null)patch.cutoff='05:00';if(V.grace==null)patch.grace=10;if(V.radius==null)patch.radius=100;if(!V.lists)patch.lists=defaultLists();if(!V.alertTypes)patch.alertTypes=defaultAlerts();if(!V.pingTypes)patch.pingTypes=defaultPings();
       if(Object.keys(patch).length){Object.assign(V,patch);updateDoc(vref(),patch).catch(e=>say(errT(e),1))}
       sub(col('staff'),s=>{staff=s.docs.map(d=>({...d.data(),id:d.id}));render()});
@@ -490,14 +507,14 @@ async function boot(u){stop();if(!u)return loginView();
       sub(query(col('pings'),where('at','>=',new Date(Date.now()-864e5))),s=>{pings=s.docs.map(npg);render()});
       sub(query(col('audit'),where('at','>=',new Date(Date.now()-70*864e5))),s=>{audit=s.docs.map(nau);if(curPerson&&sheetOpen()&&document.activeElement===document.body)personSheet(curPerson)});
     }else{
-      sub(doc(db,'venues',V.id,'staff',U.uid),s=>{ME=s.data()||{};if(ME.active===false){signOut(auth).then(()=>say(t('suspended'),1));return}render()});
+      sub(doc(db,'venues',V.id,'staff',U.uid),s=>{ME=s.data()||{};if(ME.active===false){clearSessions();signOut(auth).then(()=>say(t('suspended'),1));return}render()});
       sub(query(col('logs'),where('uid','==',U.uid)),s=>{logs=s.docs.map(norm);render()});
       sub(query(col('alerts'),where('uid','==',U.uid)),s=>{alerts=s.docs.map(nal);render()});
       sub(query(col('pings'),where('to','==',U.uid)),s=>{s.docChanges().forEach(c=>{if(c.type==='added'){const p=npg(c.doc);if(!p.seenAt&&p.at>bootAt-5000)beep()}});pings=s.docs.map(npg);render()});
       const d2=new Date();d2.setDate(d2.getDate()-2);
       sub(query(col('checks'),where('date','>=',ymd(d2))),s=>{checks=s.docs.map(nck);render()});
     }
-    render()}catch(e){loginView();say(errT(e),1)}}
+    render()}
 onAuthStateChanged(auth,u=>{if(!creating)boot(u)});
 setInterval(render,30000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&U&&Date.now()-bootAt>12*36e5)boot(auth.currentUser);else if(document.visibilityState==='visible')render()});
@@ -506,7 +523,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 const guard=f=>async b=>{if(busy)return;busy=true;if(b)b.disabled=true;try{await f(b)}catch(e){const m=errT(e);if(sheetOpen()&&$('smsg'))smsg(m);else say(m,1)}finally{busy=false;if(b&&b.isConnected)b.disabled=false}};
 const A={
   lang:()=>{lang=lang==='ar'?'en':'ar';lsSet('hadir-lang',lang);applyLang();if(sheetOpen())closeSheet();U?render():loginView()},
-  logout:()=>{closeSheet();signOut(auth)},
+  logout:()=>{closeSheet();clearSessions();signOut(auth)},
   mode:b=>{mode=b.dataset.k;say('');loginView()},
   tab:b=>{tab=b.dataset.k;render();scrollTo(0,0)},
   stab:b=>{stab=b.dataset.k;render()},
