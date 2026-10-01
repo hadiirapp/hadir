@@ -106,7 +106,7 @@ a{color:var(--brand)}
 <script type="module">
 import {initializeApp,deleteApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,EmailAuthProvider,reauthenticateWithCredential,updatePassword} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {getFirestore,doc,getDoc,getDocs,setDoc,updateDoc,addDoc,collection,query,where,onSnapshot,serverTimestamp,Timestamp,deleteField} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {getFirestore,doc,getDoc,getDocs,setDoc,updateDoc,addDoc,collection,query,where,onSnapshot,serverTimestamp,Timestamp,deleteField,writeBatch} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const cfg={apiKey:"AIzaSyCauWSs3cZKIsUmWynizn0AVPget9IeKt8",authDomain:"hadir-69322.firebaseapp.com",projectId:"hadir-69322",storageBucket:"hadir-69322.firebasestorage.app",messagingSenderId:"1073180364182",appId:"1:1073180364182:web:d7a3e145a678e5d195e1b7"};
 const app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
@@ -144,7 +144,7 @@ alertTypes:'أنواع التنبيهات (كل سطر نوع)',alertTypesShort:
 noStaff:'ما في موظفين بعد.',permission:'ما عندك صلاحية. تأكد إنه قواعد الأمان الجديدة انحطت بـ Firestore.',errGeneric:'صار خطأ: {0}',
 eCred:'بيانات الدخول غلط.',eEmail:'الإيميل مش صحيح.',eInUse:'هالاسم أو الإيميل مستعمل من قبل.',eWeak:'كلمة السر لازم 6 أحرف على الأقل.',eNet:'ما في اتصال بالانترنت.',eMany:'محاولات كتيرة، جرّب بعد شوي.',
 csvHead:'الاسم,أيام,ساعات,دقايق تأخير,بدون خروج,المبلغ',repText:'تقرير {0} – {1}',
-privacy:'الخصوصية',consentTitle:'قبل أول تسجيل',consentText:'حاضر بياخد موقعك <b>بس لحظة ما تضغط تسجيل دخول</b>، ليتأكد إنك بالمحل. ما في تتبّع بالخلفية، وما حدا بيشوف موقعك غير المسافة عن المحل عند مديرك.',agree:'موافق، كمّل',
+privacy:'الخصوصية',pingAll:'📣 للكل',pingTo:'رسالة لـ {0}',pingAllTitle:'رسالة لكل الموجودين ({0})',pingNote:'تفاصيل (اختياري)',pingSent:'انبعتت الرسالة.',seen:'تمام',pingTypes:'رسائل المدير (كل سطر رسالة)',pingTypesShort:'رسائل المدير',fromMgr:'📣 {0}',consentTitle:'قبل أول تسجيل',consentText:'حاضر بياخد موقعك <b>بس لحظة ما تضغط تسجيل دخول</b>، ليتأكد إنك بالمحل. ما في تتبّع بالخلفية، وما حدا بيشوف موقعك غير المسافة عن المحل عند مديرك.',agree:'موافق، كمّل',
 wd:['أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت']},
 en:{langBtn:'ع',logout:'Log out',loading:'Loading…',
 tStaff:'Staff',tAdmin:'Manager',tNew:'New venue',vcode:'Venue code',uname:'Username',pass:'Password',email:'Email',vname:'Venue name',yname:'Your name',pass6:'Password (6+ characters)',login:'Log in',create:'Create venue',
@@ -176,7 +176,7 @@ alertTypes:'Alert types (one per line)',alertTypesShort:'Alert types',editSet:'E
 noStaff:'No staff yet.',permission:'Permission denied. Make sure the new security rules are published in Firestore.',errGeneric:'Something went wrong: {0}',
 eCred:'Wrong login details.',eEmail:'Invalid email.',eInUse:'That username or email is already taken.',eWeak:'Password needs 6+ characters.',eNet:'No internet connection.',eMany:'Too many attempts, try again shortly.',
 csvHead:'Name,Days,Hours,Late minutes,No clock-out,Amount',repText:'{0} report – {1}',
-privacy:'Privacy',consentTitle:'Before your first clock-in',consentText:'Hadir reads your location <b>only at the moment you tap Clock in</b>, to confirm you are at the venue. There is no background tracking; your manager only sees your distance from the venue.',agree:'OK, continue',
+privacy:'Privacy',pingAll:'📣 Everyone',pingTo:'Message to {0}',pingAllTitle:'Message everyone in the venue ({0})',pingNote:'Details (optional)',pingSent:'Message sent.',seen:'OK',pingTypes:'Manager messages (one per line)',pingTypesShort:'Manager messages',fromMgr:'📣 {0}',consentTitle:'Before your first clock-in',consentText:'Hadir reads your location <b>only at the moment you tap Clock in</b>, to confirm you are at the venue. There is no background tracking; your manager only sees your distance from the venue.',agree:'OK, continue',
 wd:['Sun','Mon','Tue','Wed','Thu','Fri','Sat']}};
 let lang='ar';try{lang=localStorage.getItem('hadir-lang')||'ar'}catch(e){}
 const t=(k,...a)=>{const v=L[lang][k]??L.ar[k]??k;if(Array.isArray(v))return v;let s=String(v);a.forEach((x,i)=>{s=s.split('{'+i+'}').join(String(x))});return s};
@@ -215,7 +215,7 @@ const getPos=()=>new Promise((ok,no)=>navigator.geolocation?navigator.geolocatio
 function dist(a,b){const R=6371000,r=Math.PI/180,dl=(b.latitude-a.latitude)*r,dn=(b.longitude-a.longitude)*r;const h=Math.sin(dl/2)**2+Math.cos(a.latitude*r)*Math.cos(b.latitude*r)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 
 /* ---------- state ---------- */
-let U=null,V=null,ME={},logs=[],staff=[],alerts=[],checks=[],audit=[];
+let U=null,V=null,ME={},logs=[],staff=[],alerts=[],checks=[],audit=[],pings=[];
 let mode='staff',tab='now',stab='shift',ltype='open',un=[],busy=false,creating=false,bootAt=0;
 let repY=new Date().getFullYear(),repM=new Date().getMonth(),repLogs=null,repLogKey='';
 let draft=[],editingLog='',editingStaff='',manualPid='',curPerson='',lastInvite='';
@@ -252,6 +252,8 @@ const nal=d=>{const x=d.data({serverTimestamps:'estimate'});return{...x,id:d.id,
 const nau=d=>{const x=d.data({serverTimestamps:'estimate'});return{...x,id:d.id,at:tsMs(x.at)||Date.now()}};
 const nck=d=>{const x=d.data({serverTimestamps:'estimate'});const done={};for(const [k,v] of Object.entries(x.done||{}))if(v)done[k]={...v,at:tsMs(v.at)};return{id:d.id,date:x.date,type:x.type,done}};
 function defaultLists(){const D={ar:{open:['تشغيل الإضاءة والموسيقى','ترتيب الطاولات والكراسي','تجهيز البار والثلج','فحص نظافة الحمامات','تشغيل الكاش والـ POS','تجهيز المنيو','بريفينغ سريع للفريق'],close:['عدّ الكاش وتسليم المبلغ','تنظيف البار والطاولات','تسجيل النواقص للطلبية','إطفاء الأجهزة والإضاءة','إقفال الأبواب والتأكد من الأمان']},en:{open:['Lights and music on','Tables and chairs set','Bar stocked and ice ready','Restrooms checked','Cash / POS system on','Menus ready','Quick team briefing'],close:['Cash counted and handed over','Bar and tables cleaned','Out-of-stock items noted','Equipment and lights off','Doors locked, security checked']}}[lang];return{open:D.open.map(x=>({id:'i'+rid(),t:x})),close:D.close.map(x=>({id:'i'+rid(),t:x}))}}
+const defaultPings=()=>lang==='ar'?['تعا لعندي','تعا عالبار','في زبون ناطرك','اجتماع سريع']:['Come to me','Come to the bar','A guest is waiting for you','Quick meeting'];
+const npg=d=>{const x=d.data({serverTimestamps:'estimate'});return{...x,id:d.id,at:tsMs(x.at)||Date.now(),seenAt:tsMs(x.seenAt)}};
 const defaultAlerts=()=>lang==='ar'?['بدي المدير','مشكلة مع زبون','نقص بضاعة','طوارئ']:['Need manager','Customer issue','Out of stock','Emergency'];
 
 /* ---------- sound ---------- */
@@ -267,7 +269,9 @@ const sheetOpen=()=>!$('sheet').hidden;
 /* ---------- common UI ---------- */
 const tabs=(arr,cur,act)=>`<div class="tabs" role="tablist">${arr.map(([k,l])=>`<button role="tab" data-a="${act}" data-k="${k}" aria-selected="${k===cur}">${l}</button>`).join('')}</div>`;
 function header(){$('vn').textContent=V?V.name:'';$('out').hidden=!U;$('out').textContent=t('logout');$('lng').textContent=t('langBtn')}
-function alertBar(){const b=$('abar');if(!U||U.role!=='admin'){b.hidden=true;return}
+function alertBar(){const b=$('abar');if(!U){b.hidden=true;return}
+  if(U.role!=='admin'){const p=pings.filter(x=>!x.seenAt&&Date.now()-x.at<12*36e5).sort((a,b)=>b.at-a.at);if(!p.length){b.hidden=true;return}const x=p[0];b.hidden=false;
+    b.innerHTML=`<span>${t('fromMgr',esc(x.from))} · ${esc(x.type)}${x.note?': '+esc(x.note):''} <span class="num">${tm(x.at)}</span>${p.length>1?` (+${p.length-1})`:''}</span><button data-a="seen" data-id="${esc(x.id)}">${t('seen')}</button>`;return}
   const u=alerts.filter(a=>!a.ackAt&&Date.now()-a.at<864e5).sort((a,b)=>b.at-a.at);
   if(!u.length){b.hidden=true;return}const a=u[0];b.hidden=false;
   b.innerHTML=`<span>🚨 ${esc(a.name)} · ${esc(a.type)}${a.note?': '+esc(a.note):''} <span class="num">${tm(a.at)}</span>${u.length>1?` (+${u.length-1})`:''}</span><button data-a="ack" data-id="${esc(a.id)}">${t('ack')}</button>`}
@@ -278,7 +282,7 @@ function logRow(x,s,ed){const l=lateMin(x,s),b=[];
   return `<div class="row"><div><div>${bdS(bizDate(x.t))}</div><div class="mute"><span class="ltr num">${tm(x.t)} → ${x.o?tm(x.o):'…'}</span>${b.join('')}</div></div><div style="text-align:end"><b class="num">${dur(effEnd(x)-x.t)}</b>${ed?`<div style="margin-top:4px"><button class="btn sm" data-a="editLog" data-id="${esc(x.id)}">${t('edit')}</button></div>`:''}</div></div>`}
 
 /* ---------- login ---------- */
-function loginView(){stop();U=V=null;ME={};logs=[];staff=[];alerts=[];checks=[];audit=[];repLogs=null;header();alertBar();
+function loginView(){stop();U=V=null;ME={};logs=[];staff=[];alerts=[];checks=[];audit=[];pings=[];repLogs=null;header();alertBar();
   const f={staff:`<input id="vc" placeholder="${t('vcode')}" autocapitalize="none" autocomplete="off"><input id="un" placeholder="${t('uname')}" autocapitalize="none" autocomplete="username"><input id="pw" type="password" placeholder="${t('pass')}" autocomplete="current-password">`,
   admin:`<input id="em" type="email" placeholder="${t('email')}" autocomplete="email"><input id="pw" type="password" placeholder="${t('pass')}" autocomplete="current-password">`,
   new:`<input id="vn2" placeholder="${t('vname')}"><input id="nm" placeholder="${t('yname')}"><input id="em" type="email" placeholder="${t('email')}" autocomplete="email"><input id="pw" type="password" placeholder="${t('pass6')}" autocomplete="new-password">`}[mode];
@@ -322,13 +326,23 @@ function viewNow(){const now=Date.now(),today=bizDate(now),g=(V.grace??10);
   const al=alerts.filter(a=>now-a.at<864e5).sort((a,b)=>(!!a.ackAt-!!b.ackAt)||(b.at-a.at)).slice(0,8);
   let h='';
   if(al.length)h+=`<div class="card"><h2>${t('alerts')}</h2><div class="list">${al.map(a=>`<div class="row"><span><b>${esc(a.name)}</b> · ${esc(a.type)}${a.note?`<div class="mute">${esc(a.note)}</div>`:''}<div class="mute num">${tm(a.at)}</div></span>${a.ackAt?`<span class="mute">${t('ackedBy',esc(a.ackBy||''),tm(a.ackAt))}</span>`:`<button class="btn sm bad fill" data-a="ack" data-id="${esc(a.id)}">${t('ack')}</button>`}</div>`).join('')}</div></div>`;
-  h+=`<div class="card"><h2>${t('inVenue',inn.length)}</h2><div class="list">${inn.length?inn.map(x=>`<div class="row"><span><i class="dot"></i>${esc(nameOf(x))}</span><span class="mute num">${tm(x.t)} · ${dur(now-x.t)}</span></div>`).join(''):`<div class="mute">${t('nobody')}</div>`}</div></div>`;
+  const lastPing=uid=>pings.filter(p=>p.to===uid&&now-p.at<12*36e5).sort((a,b)=>b.at-a.at)[0];
+  h+=`<div class="card"><div class="top" style="margin-bottom:6px"><h2 style="margin:0">${t('inVenue',inn.length)}</h2>${inn.length>1?`<button class="btn sm" data-a="pingSheet" data-id="*">${t('pingAll')}</button>`:''}</div><div class="list">${inn.length?inn.map(x=>{const lp=lastPing(x.uid);return `<div class="row"><span><i class="dot"></i>${esc(nameOf(x))}<div class="mute num">${tm(x.t)} · ${dur(now-x.t)}${lp?` · ${lp.seenAt?'✓ '+tm(lp.seenAt):'⏳ '+tm(lp.at)}`:''}</div></span><button class="btn sm" data-a="pingSheet" data-id="${esc(x.uid)}" aria-label="message">🔔</button></div>`}).join(''):`<div class="mute">${t('nobody')}</div>`}</div></div>`;
   if(na.length)h+=`<div class="card"><h2>${t('notArrived',na.length)}</h2><div class="list">${na.map(z=>`<div class="row"><span>${esc(z.p.name)}<div class="mute ltr num">${esc(z.p.start)}</div></span><span class="badge warn">${t('lateBy',z.l)}</span></div>`).join('')}</div></div>`;
   if(late.length)h+=`<div class="card"><h2>${t('lateToday',late.length)}</h2><div class="list">${late.map(z=>`<div class="row"><span>${esc(nameOf(z.x))}</span><span class="mute num">${tm(z.x.t)} · <span style="color:var(--warn)">${t('lateBy',z.l)}</span></span></div>`).join('')}</div></div>`;
   if(lost.length)h+=`<div class="card"><h2>${t('noOut',lost.length)}</h2><div class="list">${lost.map(x=>`<div class="row"><span>${esc(nameOf(x))}<div class="mute">${bdS(bizDate(x.t))} · <span class="num">${tm(x.t)}</span></div></span><button class="btn sm" data-a="editLog" data-id="${esc(x.id)}">${t('fix')}</button></div>`).join('')}</div><div class="mute" style="margin-top:6px">${t('noOutHint')}</div></div>`;
   const pr=ty=>{const it=(V.lists&&V.lists[ty])||[];const c=checks.find(z=>z.id===today+'_'+ty);const dn=(c&&c.done)||{};const n=it.filter(i=>dn[i.id]).length;const p=it.length?Math.round(n*100/it.length):0;return `<div class="row tap" data-a="goLists" data-k="${ty}"><span style="flex:1">${ty==='open'?t('open'):t('close')}<div class="bar"><i style="width:${p}%"></i></div></span><b class="num">${n}/${it.length}</b></div>`};
   h+=`<div class="card"><h2>${t('todayLists')}</h2><div class="list">${pr('open')}${pr('close')}</div></div>`;
   return h}
+
+let pingTarget='';
+function pingSheet(id){const inn=logs.filter(x=>!x.o&&!isStale(x));pingTarget=id;const ty=(V.pingTypes&&V.pingTypes.length)?V.pingTypes:defaultPings();
+  const title=id==='*'?t('pingAllTitle',inn.length):t('pingTo',esc(nameOf(inn.find(x=>x.uid===id)||{uid:id,name:''})));
+  openSheet(`<h2>${title}</h2><div class="chips">${ty.map((x,i)=>`<button type="button" class="chip ach" data-a="achip" data-v="${esc(x)}" aria-pressed="${i===0}">${esc(x)}</button>`).join('')}</div><input id="an" style="margin-top:10px" maxlength="120" placeholder="${t('pingNote')}"><button class="btn fill block" style="margin-top:12px" data-a="sendPing">${t('send')}</button>`)}
+async function sendPing(){const inn=logs.filter(x=>!x.o&&!isStale(x));const to=pingTarget==='*'?[...new Set(inn.map(x=>x.uid))]:[pingTarget];if(!to.length){closeSheet();return}
+  const sel=document.querySelector('#sheet .ach[aria-pressed="true"]'),type=sel?sel.dataset.v:defaultPings()[0],note=$('an').value.trim().slice(0,120);
+  const b=writeBatch(db);to.forEach(uid=>{const x=inn.find(z=>z.uid===uid);b.set(doc(col('pings')),{to:uid,toName:x?nameOf(x):'',from:myName(),type,note,at:serverTimestamp(),seenAt:null})});
+  await withTimeout(b.commit());closeSheet();say(t('pingSent'))}
 
 /* ---------- admin: team ---------- */
 function viewTeam(){const ps=persons(),inU=new Set(logs.filter(x=>!x.o&&!isStale(x)).map(x=>x.uid));
@@ -416,14 +430,15 @@ function viewSettings(){return `<div class="card"><h2>${esc(V.name)}</h2><div cl
   <div class="row"><span>${t('radius')}</span><b class="num">${V.radius??100}</b></div>
   <div class="row"><span>${t('grace')}</span><b class="num">${V.grace??10}</b></div>
   <div class="row"><span>${t('cutoff')}</span><b class="num ltr">${esc(V.cutoff||'05:00')}</b></div>
+  <div class="row"><span>${t('pingTypesShort')}</span><span class="mute" style="text-align:end">${(V.pingTypes||[]).map(esc).join(lang==='ar'?'، ':', ')}</span></div>
   <div class="row"><span>${t('alertTypesShort')}</span><span class="mute" style="text-align:end">${(V.alertTypes||[]).map(esc).join(lang==='ar'?'، ':', ')}</span></div></div>
   <button class="btn block" style="margin-top:10px" data-a="setSheet">${t('editSet')}</button></div>
   <div class="card g"><h2 style="margin:0">${t('location')}</h2><div class="mute">${V.lat==null?t('locNot'):t('locSet')}</div><button class="btn fill" data-a="setLoc">${t('setLoc')}</button></div>
   <div class="card g"><h2 style="margin:0">${t('account')}</h2><div class="mute ltr">${esc((auth.currentUser&&auth.currentUser.email)||'')}</div><button class="btn" data-a="passSheet">${t('changePass')}</button><a href="privacy.html" style="text-align:center">${t('privacy')}</a></div>`}
-function setSheet(){openSheet(`<h2>${t('editSet')}</h2><div class="g"><label class="f">${t('vname')}<input id="xn" maxlength="40" value="${esc(V.name)}"></label><div class="two"><label class="f">${t('radius')}<input id="rd" type="number" inputmode="numeric" value="${V.radius??100}"></label><label class="f">${t('grace')}<input id="gr" type="number" inputmode="numeric" value="${V.grace??10}"></label></div><label class="f">${t('cutoff')}<input id="co" type="time" value="${esc(V.cutoff||'05:00')}"></label><div class="mute">${t('cutoffHint')}</div><label class="f">${t('alertTypes')}<textarea id="at">${esc((V.alertTypes||[]).join('\n'))}</textarea></label><button class="btn fill" data-a="saveSet">${t('save')}</button></div>`)}
+function setSheet(){openSheet(`<h2>${t('editSet')}</h2><div class="g"><label class="f">${t('vname')}<input id="xn" maxlength="40" value="${esc(V.name)}"></label><div class="two"><label class="f">${t('radius')}<input id="rd" type="number" inputmode="numeric" value="${V.radius??100}"></label><label class="f">${t('grace')}<input id="gr" type="number" inputmode="numeric" value="${V.grace??10}"></label></div><label class="f">${t('cutoff')}<input id="co" type="time" value="${esc(V.cutoff||'05:00')}"></label><div class="mute">${t('cutoffHint')}</div><label class="f">${t('alertTypes')}<textarea id="at">${esc((V.alertTypes||[]).join('\n'))}</textarea></label><label class="f">${t('pingTypes')}<textarea id="pt">${esc((V.pingTypes||[]).join('\n'))}</textarea></label><button class="btn fill" data-a="saveSet">${t('save')}</button></div>`)}
 async function saveSet(){const nm=$('xn').value.trim()||V.name,r=Math.min(2000,Math.max(20,+$('rd').value||100)),g=Math.min(120,Math.max(0,+$('gr').value||0)),co=$('co').value||'05:00';
-  const at=$('at').value.split('\n').map(s=>s.trim()).filter(Boolean).slice(0,8);
-  await updateDoc(vref(),{name:nm,radius:r,grace:g,cutoff:co,alertTypes:at.length?at:defaultAlerts()});closeSheet();say(t('saved'))}
+  const at=$('at').value.split('\n').map(s=>s.trim()).filter(Boolean).slice(0,8),pt=$('pt').value.split('\n').map(s=>s.trim()).filter(Boolean).slice(0,8);
+  await updateDoc(vref(),{name:nm,radius:r,grace:g,cutoff:co,alertTypes:at.length?at:defaultAlerts(),pingTypes:pt.length?pt:defaultPings()});closeSheet();say(t('saved'))}
 async function setLoc(){const c=(await getPos()).coords;await withTimeout(updateDoc(vref(),{lat:c.latitude,lng:c.longitude}));say(t('locOk'))}
 
 /* ---------- shared actions ---------- */
@@ -451,7 +466,7 @@ async function doSignup(){const vn=$('vn2').value.trim(),nm=$('nm').value.trim()
   try{let c;try{c=await createUserWithEmailAndPassword(auth,em,pw)}catch(e){if(e.code==='auth/email-already-in-use')c=await signInWithEmailAndPassword(auth,em,pw);else throw e}
     const ex=await getDoc(doc(db,'users',c.user.uid));
     if(!ex.exists()){const code=Array.from({length:6},()=>'abcdefghjkmnpqrstuvwxyz23456789'[Math.random()*31|0]).join('');
-      const v=await addDoc(collection(db,'venues'),{name:vn,code,ownerUid:c.user.uid,lat:null,lng:null,radius:100,grace:10,cutoff:'05:00',lists:defaultLists(),alertTypes:defaultAlerts()});
+      const v=await addDoc(collection(db,'venues'),{name:vn,code,ownerUid:c.user.uid,lat:null,lng:null,radius:100,grace:10,cutoff:'05:00',lists:defaultLists(),alertTypes:defaultAlerts(),pingTypes:defaultPings()});
       await setDoc(doc(db,'users',c.user.uid),{role:'admin',venueId:v.id,name:nm})}
     creating=false;await boot(c.user)}catch(e){creating=false;throw e}}
 
@@ -464,7 +479,7 @@ async function boot(u){stop();if(!u)return loginView();
   try{const us=await getDoc(doc(db,'users',u.uid));if(!us.exists()){await signOut(auth);loginView();return say(t('notLinked'),1)}
     U={uid:u.uid,...us.data()};const vs=await getDoc(doc(db,'venues',U.venueId));V={id:vs.id,...vs.data()};bootAt=Date.now();say('');
     sub(vref(),s=>{if(s.exists()){V={id:s.id,...s.data()};render()}});
-    if(U.role==='admin'){const patch={};if(V.cutoff==null)patch.cutoff='05:00';if(V.grace==null)patch.grace=10;if(V.radius==null)patch.radius=100;if(!V.lists)patch.lists=defaultLists();if(!V.alertTypes)patch.alertTypes=defaultAlerts();
+    if(U.role==='admin'){const patch={};if(V.cutoff==null)patch.cutoff='05:00';if(V.grace==null)patch.grace=10;if(V.radius==null)patch.radius=100;if(!V.lists)patch.lists=defaultLists();if(!V.alertTypes)patch.alertTypes=defaultAlerts();if(!V.pingTypes)patch.pingTypes=defaultPings();
       if(Object.keys(patch).length){Object.assign(V,patch);updateDoc(vref(),patch).catch(e=>say(errT(e),1))}
       sub(col('staff'),s=>{staff=s.docs.map(d=>({...d.data(),id:d.id}));render()});
       const n=new Date(),ls=new Date(n.getFullYear(),n.getMonth(),1);ls.setDate(ls.getDate()-2);
@@ -472,11 +487,13 @@ async function boot(u){stop();if(!u)return loginView();
       sub(query(col('alerts'),where('at','>=',new Date(Date.now()-864e5))),s=>{s.docChanges().forEach(c=>{if(c.type==='added'){const a=nal(c.doc);if(!a.ackAt&&a.at>bootAt-5000)beep()}});alerts=s.docs.map(nal);render()});
       const d9=new Date();d9.setDate(d9.getDate()-9);
       sub(query(col('checks'),where('date','>=',ymd(d9))),s=>{checks=s.docs.map(nck);render()});
+      sub(query(col('pings'),where('at','>=',new Date(Date.now()-864e5))),s=>{pings=s.docs.map(npg);render()});
       sub(query(col('audit'),where('at','>=',new Date(Date.now()-70*864e5))),s=>{audit=s.docs.map(nau);if(curPerson&&sheetOpen()&&document.activeElement===document.body)personSheet(curPerson)});
     }else{
       sub(doc(db,'venues',V.id,'staff',U.uid),s=>{ME=s.data()||{};if(ME.active===false){signOut(auth).then(()=>say(t('suspended'),1));return}render()});
       sub(query(col('logs'),where('uid','==',U.uid)),s=>{logs=s.docs.map(norm);render()});
       sub(query(col('alerts'),where('uid','==',U.uid)),s=>{alerts=s.docs.map(nal);render()});
+      sub(query(col('pings'),where('to','==',U.uid)),s=>{s.docChanges().forEach(c=>{if(c.type==='added'){const p=npg(c.doc);if(!p.seenAt&&p.at>bootAt-5000)beep()}});pings=s.docs.map(npg);render()});
       const d2=new Date();d2.setDate(d2.getDate()-2);
       sub(query(col('checks'),where('date','>=',ymd(d2))),s=>{checks=s.docs.map(nck);render()});
     }
@@ -520,6 +537,8 @@ const A={
   setSheet:()=>setSheet(),saveSet:guard(saveSet),setLoc:guard(setLoc),
   passSheet:()=>passSheet(),changePass:guard(changePass),
   alertSheet:()=>alertSheet(),sendAlert:guard(sendAlert),
+  pingSheet:b=>pingSheet(b.dataset.id),sendPing:guard(sendPing),
+  seen:guard(async b=>{await updateDoc(doc(db,'venues',V.id,'pings',b.dataset.id),{seenAt:serverTimestamp()})}),
   consentOk:()=>{lsSet('hadir-consent','1');closeSheet();A.punch(null)}
 };
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b&&A[b.dataset.a]){e.preventDefault();A[b.dataset.a](b)}});
