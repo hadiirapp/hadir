@@ -422,7 +422,7 @@ function logRow(x,s,ed){const l=lateMin(x,s),b=[];
   return `<div class="row"><div><div>${bdS(bizDate(x.t))}</div><div class="mute"><span class="ltr num">${tm(x.t)} → ${x.o?tm(x.o):'…'}</span>${b.join('')}</div></div><div style="text-align:end"><b class="num">${dur(effEnd(x)-x.t)}</b>${ed?`<div style="margin-top:4px"><button class="btn sm" data-a="editLog" data-id="${esc(x.id)}">${t('edit')}</button></div>`:''}</div></div>`}
 
 /* ---------- login ---------- */
-function loginView(){if(mode==='new')mode='staff';stop();U=V=null;ME={};logs=[];staff=[];alerts=[];checks=[];audit=[];pings=[];scheds={};leaves=[];swaps=[];swA=[];swB=[];repLogs=null;header();alertBar();
+function loginView(){if(mode==='new')mode='staff';tab='now';stab='shift';ltype='open';if(typeof msView!=='undefined')msView='mine';schedWk='';stop();U=V=null;ME={};logs=[];staff=[];alerts=[];checks=[];audit=[];pings=[];scheds={};leaves=[];swaps=[];swA=[];swB=[];repLogs=null;header();alertBar();
   const f={staff:`<input id="vc" placeholder="${t('vcode')}" autocapitalize="none" autocomplete="off"><input id="un" placeholder="${t('uname')}" autocapitalize="none" autocomplete="username"><input id="pw" type="password" placeholder="${t('pass')}" autocomplete="current-password">`,
   admin:`<input id="em" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="${t('loginId')}" autocomplete="username"><input id="pw" type="password" placeholder="${t('pass')}" autocomplete="current-password"><button type="button" class="linkb" data-a="forgotSheet" style="justify-self:start">${t('forgot')}</button>`,
   new:`<input id="vn2" placeholder="${t('vname')}"><input id="nm" placeholder="${t('yname')}">${acctFields('pw')}<input id="pw" type="password" placeholder="${t('pass6')}" autocomplete="new-password">`}[mode];
@@ -785,8 +785,8 @@ async function reissue(){const p=staff.find(s=>s.id===editingStaff);if(!p)return
 const repKey=()=>`${repY}-${pad(repM+1)}`;
 const isCurMonth=()=>{const n=new Date();return repY===n.getFullYear()&&repM===n.getMonth()};
 const monthLabel=()=>new Date(repY,repM,1).toLocaleDateString(loc(),{month:'long',year:'numeric'});
-function repArr(){const k=repKey();if(isCurMonth())return logs.filter(x=>bizDate(x.t).startsWith(k));if(repLogs&&repLogKey===k)return repLogs.filter(x=>bizDate(x.t).startsWith(k));return null}
-async function loadRep(){const k=repKey();if(isCurMonth()||repLogKey===k)return;repLogs=null;repLogKey=k;
+function repArr(){const k=repKey();if(!(repLogs&&repLogKey===k))return null;const m=new Map();repLogs.forEach(x=>m.set(x.id,x));logs.forEach(x=>m.set(x.id,x));return [...m.values()].filter(x=>bizDate(x.t).startsWith(k))}
+async function loadRep(){const k=repKey();if(repLogKey===k)return;repLogs=null;repLogKey=k;
   const s=new Date(repY,repM,1);s.setDate(s.getDate()-1);const e=new Date(repY,repM+1,2);
   try{const q=await getDocs(query(col('logs'),where('inAt','>=',s),where('inAt','<',e)));if(repLogKey===k){repLogs=q.docs.map(norm);render()}}catch(er){repLogKey='';say(errT(er),1)}}
 function reportRows(){const arr=repArr()||[];return persons().map(p=>{const u=uidsOf(p),ls=arr.filter(x=>u.includes(x.uid));if(p.active===false&&!ls.length)return null;const m=sumLogs(ls,p),c=payCalc(p,m,repKey());return{p,m,amt:c.amt,py:c.py}}).filter(Boolean)}
@@ -817,7 +817,7 @@ async function saveManual(){const p=persons().find(z=>pidOf(z)===manualPid);if(!
   const ref=await addDoc(col('logs'),{uid:p.id,name:p.name,inAt:Timestamp.fromMillis(r.nt),outAt:r.no?Timestamp.fromMillis(r.no):null,manual:true});
   await addDoc(col('audit'),{logId:ref.id,uid:p.id,name:p.name,by:myName(),at:serverTimestamp(),before:null,after:{in:r.nt,out:r.no||null},manual:true});
   act('logAdd',p.name,`${bdS(bizDate(r.nt))} ${tm(r.nt)} → ${r.no?tm(r.no):'…'}`);
-  if(repLogs&&!isCurMonth())repLogs.push({id:ref.id,uid:p.id,name:p.name,t:r.nt,o:r.no,manual:true});
+  if(repLogs)repLogs.push({id:ref.id,uid:p.id,name:p.name,t:r.nt,o:r.no,manual:true});
   say(t('saved'));personSheet(manualPid)}
 async function shareText(x){try{if(navigator.share){await navigator.share({text:x});return}}catch(e){if(e&&e.name==='AbortError')return}
   try{await navigator.clipboard.writeText(x);say(t('copied'))}catch(e){window.prompt('',x)}}
@@ -974,7 +974,7 @@ function start(U0,V0){stop();U=U0;V=V0;bootAt=Date.now();say('');acts=[];payMap=
       const patch={};if(V.cutoff==null)patch.cutoff='05:00';if(V.grace==null)patch.grace=10;if(V.radius==null)patch.radius=100;if(!V.lists)patch.lists=defaultLists();if(!V.alertTypes)patch.alertTypes=defaultAlerts();if(!V.pingTypes)patch.pingTypes=defaultPings();if(!V.positions)patch.positions=defaultPositions();
       if(Object.keys(patch).length){Object.assign(V,patch);updateDoc(vref(),patch).catch(e=>say(errT(e),1))}
       sub(col('staff'),s=>{staff=s.docs.map(d=>({...d.data(),id:d.id}));migratePay();render()});
-      const n=new Date(),ls=new Date(n.getFullYear(),n.getMonth(),1);ls.setDate(ls.getDate()-2);
+      const ls=new Date(Date.now()-3*864e5);
       sub(query(col('logs'),where('inAt','>=',ls)),s=>{logs=s.docs.map(norm);render()});
       sub(query(col('alerts'),where('at','>=',new Date(Date.now()-864e5))),s=>{s.docChanges().forEach(c=>{if(c.type==='added'){const a=nal(c.doc);if(!a.ackAt&&a.at>bootAt-5000)beep()}});alerts=s.docs.map(nal);render()});
       const d9=new Date();d9.setDate(d9.getDate()-9);
