@@ -222,7 +222,9 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const pad=n=>String(n).padStart(2,'0');
 const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const hmMin=s=>{const p=String(s||'0:0').split(':').map(Number);return (p[0]||0)*60+(p[1]||0)};
-const tm=ms=>{const d=new Date(ms);return pad(d.getHours())+':'+pad(d.getMinutes())};
+const ampm=h=>lang==='ar'?(h<12?'ص':'م'):(h<12?'am':'pm');
+const tm=ms=>{const d=new Date(ms),h=d.getHours();return `${h%12||12}:${pad(d.getMinutes())} ${ampm(h)}`};
+const h12=v=>{const [h,m]=String(v||'').split(':').map(Number);if(isNaN(h))return v||'';const hh=h%12||12;return m?`${hh}:${pad(m)}`:`${hh}`};
 const loc=()=>lang==='ar'?'ar-u-nu-latn':'en-GB';
 const dateS=ms=>new Date(ms).toLocaleDateString(loc(),{weekday:'short',day:'numeric',month:'short'});
 const bdMs=bd=>{const [y,m,d]=bd.split('-').map(Number);return +new Date(y,m-1,d)};
@@ -269,8 +271,8 @@ function defShift(p,bd){if(!p)return null;if((p.offDays||p.off||[]).includes(wdO
 function entryOf(pid,bd){const d=scheds[weekOf(bd)];return d&&d.shifts&&d.shifts[pid]?d.shifts[pid][bd]:undefined}
 const rosterP=(pid,bd)=>{const d=scheds[weekOf(bd)];return d&&d.ppl?d.ppl[pid]:null};
 function effShift(pid,bd,p){const e=entryOf(pid,bd);if(e==='off')return null;if(typeof e==='string'&&e.includes('-')){const [a,b]=e.split('-');return{start:a,end:b}}return defShift(p||rosterP(pid,bd),bd)}
-const endTxt=e=>e==='close'?t('closeLbl'):(e||'-');
-const shStr=sh=>sh?`${sh.start}–${endTxt(sh.end)}`:t('dayOff');
+const endTxt=e=>e==='close'?t('closeLbl'):(e?h12(e):'-');
+const shStr=sh=>sh?`${h12(sh.start)}–${endTxt(sh.end)}`:t('dayOff');
 const shCls=sh=>{const h=parseInt(sh.start,10);return h<12?'c-am':h<17?'c-pm':'c-nt'};
 const defaultPositions=()=>lang==='ar'?['مشرف','تيم ليدر','ويتر','رانر','بار','هوستس','كاش','مطبخ']:['Supervisor','Team Leader','Waiter','Runner','Bar','Hostess','Cash','Kitchen'];
 const posList=()=>(V&&V.positions&&V.positions.length)?V.positions:defaultPositions();
@@ -284,7 +286,7 @@ function schedGrid(wk,list,editable){const days=weekDays(wk),today=bizDate(Date.
   const gs=groupRows(list);if(!gs.length)return `<div class="card mute">${t('noStaff')}</div>`;
   gs.forEach(g=>{h+=`<tr class="grp"><td class="nm">${cMode()==='pos'?`<i class="gdot" style="background:${PAL[colorKey({start:'12:00'},g.items[0]&&g.items[0].pos)][1]}"></i>`:''}${esc(g.name)}</td><td colspan="7"></td></tr>`;
     g.items.forEach(r=>{h+=`<tr><td class="nm"${editable?` role="button" tabindex="0" data-a="rowSheet" data-p="${esc(r.pid)}"`:''}><span class="${editable?'nmTap':''}">${esc(r.name)}</span></td>${days.map(d=>{const sh=effShift(r.pid,d,r.prof),ex=entryOf(r.pid,d)!==undefined;
-      return `<td class="${d===today?'tdy':''}"><span class="cell${!sh&&offKey()==='yellow'?' c-yel':''}" style="background:${PAL[colorKey(sh,r.pos)][0]}"${editable?` role="button" tabindex="0" data-a="cell" data-p="${esc(r.pid)}" data-d="${d}"`:''}>${sh?`<b class="ltr">${esc(sh.start)}</b><span>${esc(endTxt(sh.end))}</span>`:`<b>${t('offShort')}</b>`}${ex?'<i class="ed"></i>':''}</span></td>`}).join('')}</tr>`});
+      return `<td class="${d===today?'tdy':''}"><span class="cell${!sh&&offKey()==='yellow'?' c-yel':''}" style="background:${PAL[colorKey(sh,r.pos)][0]}"${editable?` role="button" tabindex="0" data-a="cell" data-p="${esc(r.pid)}" data-d="${d}"`:''}>${sh?`<b class="ltr">${esc(h12(sh.start))}</b><span>${esc(endTxt(sh.end))}</span>`:`<b>${t('offShort')}</b>`}${ex?'<i class="ed"></i>':''}</span></td>`}).join('')}</tr>`});
     h+=`<tr class="cnt"><td class="nm">${t('perShift')}</td>${days.map(d=>`<td class="${d===today?'tdy':''}">${g.items.filter(r=>effShift(r.pid,d,r.prof)).length}</td>`).join('')}</tr>`});
   return h+`</tbody></table></div>`+legendHtml()}
 const PAL={blue:['rgba(79,155,255,.22)','#D9E9FF'],green:['rgba(52,199,163,.24)','#D4F3EA'],purple:['rgba(155,115,255,.26)','#E7DEFF'],yellow:['rgba(245,190,50,.32)','#FCE3A0'],pink:['rgba(255,105,160,.24)','#FFDCE9'],orange:['rgba(255,140,60,.26)','#FFE0C7'],red:['rgba(235,80,80,.24)','#FFD9D6'],teal:['rgba(40,170,200,.24)','#D3F0F7'],lime:['rgba(150,200,60,.26)','#E6F4CF'],gray:['rgba(140,150,160,.26)','#E3E7EA']};
@@ -310,7 +312,7 @@ async function schedImage(wk,list){try{if(document.fonts&&document.fonts.ready)a
   groups.forEach(g=>{x.fillStyle='#EAF3EF';x.fillRect(0,y,W,RH);x.fillStyle='#0F3D3E';x.font=`700 15px ${F}`;x.fillText(g.name,W/2,y+RH/2);y+=RH;
     g.items.forEach(r=>{x.fillStyle='#14201F';x.font=`600 14px ${F}`;x.fillText(r.name,NW/2,y+RH/2);
       days.forEach((d,i)=>{const sh=effShift(r.pid,d,r.prof),ck=colorKey(sh,r.pos),cx=NW+i*CW;x.fillStyle=PAL[ck][1];rr(x,cx+5,y+5,CW-10,RH-10,9);x.fill();
-        x.fillStyle=!sh&&ck==='yellow'?'#9A6212':'#14201F';if(sh){x.font=`700 14px ${F}`;x.fillText(sh.start,cx+CW/2,y+RH/2-7);x.fillStyle='#4A5A58';x.font=`500 11px ${F}`;x.fillText(endTxt(sh.end),cx+CW/2,y+RH/2+10)}else{x.font=`700 14px ${F}`;x.fillText('OFF',cx+CW/2,y+RH/2)}});
+        x.fillStyle=!sh&&ck==='yellow'?'#9A6212':'#14201F';if(sh){x.font=`700 14px ${F}`;x.fillText(h12(sh.start),cx+CW/2,y+RH/2-7);x.fillStyle='#4A5A58';x.font=`500 11px ${F}`;x.fillText(endTxt(sh.end),cx+CW/2,y+RH/2+10)}else{x.font=`700 14px ${F}`;x.fillText('OFF',cx+CW/2,y+RH/2)}});
       x.strokeStyle='#E1E8E5';x.lineWidth=1;x.beginPath();x.moveTo(0,y+RH);x.lineTo(W,y+RH);x.stroke();y+=RH});
     x.fillStyle='#5E6F6D';x.font=`500 12px ${F}`;x.fillText(t('perShift'),NW/2,y+RH/2);days.forEach((d,i)=>x.fillText(String(g.items.filter(r=>effShift(r.pid,d,r.prof)).length),NW+i*CW+CW/2,y+RH/2));y+=RH});
   x.strokeStyle='#C9D6D2';x.beginPath();x.moveTo(NW,TOP);x.lineTo(NW,y);x.stroke();
@@ -408,7 +410,7 @@ function staffView(){const o=myOpen(),key=bizDate(Date.now()).slice(0,7);
   if(o){const la=alerts.slice().sort((a,b)=>b.at-a.at)[0];h+=`<div style="text-align:center;margin-top:14px"><button class="btn bad" data-a="alertSheet">${t('alertBtn')}</button>${la&&Date.now()-la.at<6*36e5?`<div class="mute" style="margin-top:6px">${la.ackAt?t('alertAcked',tm(la.at)):t('alertPending',tm(la.at))}</div>`:''}</div>`}
   if(stale.length)h+=`<div class="card mute">${t('staleMine',bdS(bizDate(stale[0].t)))}</div>`;
   if(!isStandalone()&&!lsGet('hadir-d-a2hs'))h+=`<div class="card"><div class="top"><div class="mute">${t('a2hs')}</div><button class="btn sm" data-a="dismiss" data-k="a2hs" aria-label="close">✕</button></div></div>`;
-  h+=`<div class="card"><h2>${t('month')}</h2><div class="kpi"><div><b class="num">${dur(m.ms)}</b><span class="mute">${t('hours')}</span></div><div><b class="num">${m.days}</b><span class="mute">${t('days')}</span></div><div><b class="num">${m.late}</b><span class="mute">${t('lateMin')}</span></div></div><div class="mute" style="margin-top:10px;text-align:center">${t('myShift',`<span class="ltr num">${esc(ME.start||'-')}</span>`,`<span class="ltr num">${esc(endTxt(ME.end))}</span>`)}${(ME.offDays||[]).length?' · '+t('off',offTxt(ME.offDays)):''}</div></div>`;
+  h+=`<div class="card"><h2>${t('month')}</h2><div class="kpi"><div><b class="num">${dur(m.ms)}</b><span class="mute">${t('hours')}</span></div><div><b class="num">${m.days}</b><span class="mute">${t('days')}</span></div><div><b class="num">${m.late}</b><span class="mute">${t('lateMin')}</span></div></div><div class="mute" style="margin-top:10px;text-align:center">${t('myShift',`<span class="ltr num">${ME.start?esc(h12(ME.start)):'-'}</span>`,`<span class="ltr num">${esc(endTxt(ME.end))}</span>`)}${(ME.offDays||[]).length?' · '+t('off',offTxt(ME.offDays)):''}</div></div>`;
   h+=`<div class="card"><h2>${t('history')}</h2><div class="list">${mine.length?mine.map(x=>logRow(x,ME,false)).join(''):`<div class="mute">${t('none')}</div>`}</div></div>`;
   h+=`<div style="text-align:center;margin-top:16px"><button class="btn sm" data-a="passSheet">${t('changePass')}</button></div><div class="foot"><a href="privacy.html">${t('privacy')}</a></div>`;
   $('app').innerHTML=h}
@@ -443,7 +445,7 @@ function viewNow(){const now=Date.now(),today=bizDate(now),g=(V.grace??10);
   if(rq)h+=`<div class="card row tap" data-a="goTab" data-k="sched"><b>${t('requests',rq)}</b><span class="badge warn">${t('aSched')}</span></div>`;
   const lastPing=uid=>pings.filter(p=>p.to===uid&&now-p.at<12*36e5).sort((a,b)=>b.at-a.at)[0];
   h+=`<div class="card"><div class="top" style="margin-bottom:6px"><h2 style="margin:0">${t('inVenue',inn.length)}</h2>${inn.length>1?`<button class="btn sm" data-a="pingSheet" data-id="*">${t('pingAll')}</button>`:''}</div><div class="list">${inn.length?inn.map(x=>{const lp=lastPing(x.uid);return `<div class="row"><span><i class="dot"></i>${esc(nameOf(x))}<div class="mute num">${tm(x.t)} · ${dur(now-x.t)}${lp?` · ${lp.seenAt?'✓ '+tm(lp.seenAt):'⏳ '+tm(lp.at)}`:''}</div></span><button class="btn sm" data-a="pingSheet" data-id="${esc(x.uid)}" aria-label="message">🔔</button></div>`}).join(''):`<div class="mute">${t('nobody')}</div>`}</div></div>`;
-  if(na.length)h+=`<div class="card"><h2>${t('notArrived',na.length)}</h2><div class="list">${na.map(z=>`<div class="row"><span>${esc(z.p.name)}<div class="mute ltr num">${esc(z.s)}</div></span><span class="badge warn">${t('lateBy',z.l)}</span></div>`).join('')}</div></div>`;
+  if(na.length)h+=`<div class="card"><h2>${t('notArrived',na.length)}</h2><div class="list">${na.map(z=>`<div class="row"><span>${esc(z.p.name)}<div class="mute ltr num">${esc(h12(z.s))}</div></span><span class="badge warn">${t('lateBy',z.l)}</span></div>`).join('')}</div></div>`;
   if(late.length)h+=`<div class="card"><h2>${t('lateToday',late.length)}</h2><div class="list">${late.map(z=>`<div class="row"><span>${esc(nameOf(z.x))}</span><span class="mute num">${tm(z.x.t)} · <span style="color:var(--warn)">${t('lateBy',z.l)}</span></span></div>`).join('')}</div></div>`;
   if(lost.length)h+=`<div class="card"><h2>${t('noOut',lost.length)}</h2><div class="list">${lost.map(x=>`<div class="row"><span>${esc(nameOf(x))}<div class="mute">${bdS(bizDate(x.t))} · <span class="num">${tm(x.t)}</span></div></span><button class="btn sm" data-a="editLog" data-id="${esc(x.id)}">${t('fix')}</button></div>`).join('')}</div><div class="mute" style="margin-top:6px">${t('noOutHint')}</div></div>`;
   const pr=ty=>{const it=(V.lists&&V.lists[ty])||[];const c=checks.find(z=>z.id===today+'_'+ty);const dn=(c&&c.done)||{};const n=it.filter(i=>dn[i.id]).length;const p=it.length?Math.round(n*100/it.length):0;return `<div class="row tap" data-a="goLists" data-k="${ty}"><span style="flex:1">${ty==='open'?t('open'):t('close')}<div class="bar"><i style="width:${p}%"></i></div></span><b class="num">${n}/${it.length}</b></div>`};
@@ -629,7 +631,7 @@ async function psave(){const b=writeBatch(db);b.update(vref(),{positions:posDraf
 function viewTeam(){const ps=persons(),inU=new Set(logs.filter(x=>!x.o&&!isStale(x)).map(x=>x.uid)),dc={};ps.forEach(p=>{if(p.device)dc[p.device]=(dc[p.device]||0)+1});
   return `<div class="card"><h2>${t('code')}</h2><div class="top"><div class="code num ltr">${esc(V.code)}</div><button class="btn sm" data-a="shareCode">${t('shareInvite')}</button></div><div class="mute">${t('codeHint')}</div></div>
   <button class="btn fill block" style="margin-top:12px" data-a="addSheet">${t('addStaff')}</button>
-  <div class="card"><h2>${t('staffList',ps.length)}</h2><div class="list">${ps.length?ps.map(p=>`<div class="row tap" role="button" tabindex="0" data-a="staffSheet" data-id="${esc(p.id)}"><span>${uidsOf(p).some(u=>inU.has(u))?'<i class="dot"></i>':''}${esc(p.name)}${p.active===false?`<span class="badge">${t('inactive')}</span>`:''}${p.device&&dc[p.device]>1?`<span class="badge bad">⚠️ ${t('sameDev')}</span>`:''}<div class="mute">${p.pos?esc(p.pos)+' · ':''}<span class="ltr num">${esc(p.start||'-')} – ${esc(endTxt(p.end))}</span>${(p.offDays||[]).length?' · '+t('off',offTxt(p.offDays)):''}</div></span>${canPay()?`<span class="mute num">${payLbl(p)}</span>`:''}</div>`).join(''):`<div class="mute">${t('noStaff')}</div>`}</div></div>`+mgrCard()}
+  <div class="card"><h2>${t('staffList',ps.length)}</h2><div class="list">${ps.length?ps.map(p=>`<div class="row tap" role="button" tabindex="0" data-a="staffSheet" data-id="${esc(p.id)}"><span>${uidsOf(p).some(u=>inU.has(u))?'<i class="dot"></i>':''}${esc(p.name)}${p.active===false?`<span class="badge">${t('inactive')}</span>`:''}${p.device&&dc[p.device]>1?`<span class="badge bad">⚠️ ${t('sameDev')}</span>`:''}<div class="mute">${p.pos?esc(p.pos)+' · ':''}<span class="ltr num">${p.start?esc(h12(p.start)):'-'} – ${esc(endTxt(p.end))}</span>${(p.offDays||[]).length?' · '+t('off',offTxt(p.offDays)):''}</div></span>${canPay()?`<span class="mute num">${payLbl(p)}</span>`:''}</div>`).join(''):`<div class="mute">${t('noStaff')}</div>`}</div></div>`+mgrCard()}
 function staffForm(p){const od=new Set(p?p.offDays||[]:[]),py=p?payOf(p):{payType:'hour',rate:''},hour=py.payType==='hour';
   return `<div class="g"><label class="f">${t('name')}<input id="sn" maxlength="40" value="${esc(p?p.name:'')}"></label>
   ${p?'':`<label class="f">${t('unameHint')}<input id="su" maxlength="20" autocapitalize="none" autocomplete="off"></label><label class="f">${t('pass6')}<input id="sp" autocomplete="off" autocapitalize="none"></label>`}
