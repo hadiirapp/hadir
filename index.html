@@ -368,7 +368,7 @@ const dateS=ms=>new Date(ms).toLocaleDateString(loc(),{weekday:'short',day:'nume
 const bdMs=bd=>{const [y,m,d]=bd.split('-').map(Number);return +new Date(y,m-1,d)};
 const bdS=bd=>dateS(bdMs(bd));
 const bdAdd=(bd,k)=>{const [y,m,d]=bd.split('-').map(Number);return ymd(new Date(y,m-1,d+k))};
-const dur=ms=>{ms=Math.max(0,ms);const h=Math.floor(ms/36e5),m=Math.floor(ms%36e5/6e4);return lang==='ar'?`${h}س ${m}د`:`${h}h ${m}m`};
+const dur=ms=>{ms=Math.max(0,ms);const h=Math.floor(ms/36e5),m=Math.floor(ms%36e5/6e4);return lang==='ar'?`\u2067${h}س ${m}د\u2069`:`${h}h ${m}m`};
 const money=n=>'$'+(Math.round((n||0)*100)/100).toLocaleString('en-US',{maximumFractionDigits:2});
 const rid=()=>Math.random().toString(36).slice(2,9);
 const toInput=ms=>{const d=new Date(ms);return `${ymd(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}`};
