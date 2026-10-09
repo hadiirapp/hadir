@@ -1,6 +1,6 @@
 # Businesses
 
-A new business gets built here every 2 hours. Each folder has the product files plus `LAUNCH.md`, which covers how to launch it, pricing, listing copy, and realistic revenue expectations.
+A new business gets built here every 3 hours. Each folder has the product files plus `LAUNCH.md`, which covers how to launch it, pricing, listing copy, and realistic revenue expectations.
 
 | # | Business | Type | Startup cost | Status |
 |---|---|---|---|---|
