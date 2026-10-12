@@ -1333,15 +1333,23 @@ async function bDemo(){const un='demo'+mkCode(),pw=String(100000+Math.random()*9
 let demoSeeding=false;
 async function demoSeed(){try{const pos=V.positions||defaultPositions(),now=Date.now(),H=36e5;
   const ppl=[['Rami',0,-3.2*H],['Maya',2,-3*H],['Karim',2,-2.6*H],['Lea',3,-2.1*H],['Jad',4,-1.4*H],['Nour',5,null],['Tarek',6,-2.9*H],['Sara',4,null]];
-  const b=writeBatch(db);ppl.forEach(([n,pi],i)=>{const id='demo'+i;b.set(doc(db,'venues',V.id,'staff',id),{name:n,username:n.toLowerCase(),start:'18:00',end:'02:00',offDays:[],pos:pos[pi%pos.length]||'',since:bizDate(now-90*864e5),canCash:i===6,active:true,pid:id});b.set(doc(db,'venues',V.id,'pay',id),{payType:'hour',rate:5})});await b.commit();
+  const b=writeBatch(db);ppl.forEach(([n,pi],i)=>{const id='demo'+i;b.set(doc(db,'venues',V.id,'staff',id),{name:n,username:n.toLowerCase(),start:'18:00',end:'02:00',offDays:[],pos:pos[pi%pos.length]||'',since:bizDate(now-90*864e5),canCash:i===6,active:true,pid:id});b.set(doc(db,'venues',V.id,'pay',id),{payType:'hour',rate:5})});b.set(doc(db,'venues',V.id,'staff','demoMe'),{name:DEMO_ME(),username:'you',start:'18:00',end:'02:00',offDays:[],pos:pos[2]||'',since:bizDate(now),canCash:false,active:true,pid:'demoMe'});b.set(doc(db,'venues',V.id,'pay','demoMe'),{payType:'hour',rate:5});await b.commit();
   for(let i=0;i<ppl.length;i++){const [n,,off]=ppl[i];if(off!=null)await addDoc(col('logs'),{uid:'demo'+i,name:n,inAt:Timestamp.fromMillis(now+off),outAt:null,manual:true})}}catch(e){}}
 function demoCheck(){let bar=document.getElementById('demoBar');
   if(!V||!V.demo||!U||U.role==='boss'){if(bar)bar.remove();return}
   if(!V.demoStart&&isAdm()&&!demoSeeding){demoSeeding=true;V.demoStart=Timestamp.fromMillis(Date.now());updateDoc(vref(),{demoStart:V.demoStart}).catch(()=>{});demoSeed()}
   const left=(tsMs(V.demoStart)||Date.now())+DEMO_MS-Date.now();
   if(left<=0){if(bar)bar.remove();clearSessions();V=null;signOut(auth).catch(()=>{});demoOver();return}
-  if(!bar){bar=document.createElement('div');bar.id='demoBar';bar.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom));z-index:99;background:#0F3D38;color:#7FE0CF;border:1px solid #1d6b62;border-radius:20px;padding:6px 14px;font-size:.8rem;font-weight:600;pointer-events:none';document.body.appendChild(bar)}
-  const m=Math.floor(left/6e4),sc=Math.floor(left%6e4/1e3);bar.textContent=(lang==='ar'?'ديمو · باقي ':'Demo · ')+m+':'+String(sc).padStart(2,'0')+(lang==='ar'?'':' left')}
+  if(!bar){bar=document.createElement('button');bar.id='demoBar';bar.type='button';bar.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom));z-index:99;background:#7FE0CF;color:#0B1F1D;border:0;border-radius:22px;padding:10px 18px;font:inherit;font-size:.9rem;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.4);white-space:nowrap';bar.innerHTML=`${lang==='ar'?'جرّب كموظف':'Try as staff'} · <span id="demoT"></span>`;bar.onclick=()=>demoStaffSheet();document.body.appendChild(bar)}
+  const m=Math.floor(left/6e4),sc=Math.floor(left%6e4/1e3),el=document.getElementById('demoT');if(el)el.textContent=m+':'+String(sc).padStart(2,'0')}
+const DEMO_ME=()=>lang==='ar'?'إنت (تجربة)':'You (demo)';
+const demoOpen=()=>logs.find(x=>x.uid==='demoMe'&&!x.o);
+function demoStaffSheet(){const o=demoOpen(),ar=lang==='ar';
+  openSheet(`<div class="mute" style="font-size:.8rem">${ar?'هيك بتطلع الشاشة عند الموظف':'This is what your staff see'}</div><h2 style="margin:6px 0 2px">${ar?'أهلا':'Hi there'}</h2><div class="mute">${ar?'شيفتك اليوم: 18:00 – 02:00':'Your shift today: 18:00 – 02:00'}</div>
+  <div class="card" style="text-align:center;margin-top:14px">${o?`<div style="color:#7FE0CF;font-weight:700">${ar?'إنت مسجّل حضور':'You are clocked in'}</div><div class="mute" style="margin:4px 0 12px">${ar?'من':'Since'} ${new Date(o.t).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div><button class="btn bad fill block" style="padding:16px;font-size:1.05rem" data-a="demoOut">${ar?'تسجيل خروج':'Punch out'}</button>`:`<button class="btn fill block" style="padding:16px;font-size:1.05rem" data-a="demoIn">${ar?'تسجيل حضور':'Punch in'}</button>`}</div>
+  <div class="mute" style="font-size:.8rem;margin-top:10px">${ar?'بالتطبيق الحقيقي الموظف ما بيقدر يسجّل إلا وهو جوّا المحل (GPS). بالديمو بيمشي من وين ما كنت.':'In the real app staff can only punch in inside the venue (GPS). In the demo it works from anywhere.'}</div>`)}
+async function demoIn(){if(demoOpen())return closeSheet();await addDoc(col('logs'),{uid:'demoMe',name:DEMO_ME(),inAt:serverTimestamp(),outAt:null,manual:true});closeSheet();say(lang==='ar'?'تم! شوف الداشبورد، إنت طالع لايف':'Done! Check the dashboard, you show up live')}
+async function demoOut(){const o=demoOpen();if(o)await updateDoc(doc(db,'venues',V.id,'logs',o.id),{outAt:serverTimestamp()});closeSheet();say(lang==='ar'?'تم! الساعات انحسبت':'Done! Hours counted')}
 function demoOver(){const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;z-index:999;background:#0B1F1D;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:14px';
   d.innerHTML=`<div style="font-size:1.5rem;font-weight:800">${lang==='ar'?'خلص الديمو':'Your demo has ended'}</div><div style="opacity:.8">${lang==='ar'?'عجبك؟ تواصل معنا لتاخد Hadir لمحلك':'Liked it? Contact us to get Hadir for your venue.'}</div><a href="https://wa.me/${WA}?text=${encodeURIComponent('Hi Hadir, I tried the demo and I want Hadir for my venue')}" style="background:#7FE0CF;color:#0B1F1D;padding:12px 22px;border-radius:12px;font-weight:700;text-decoration:none">WhatsApp</a>`;document.body.appendChild(d)}
 setInterval(demoCheck,1000);
@@ -1597,7 +1605,7 @@ const A={
   cpick:b=>{cDraft[b.dataset.g][b.dataset.k]=b.dataset.v;renderColorSheet()},
   rowSheet:b=>rowSheet(b.dataset.p),rowApply:guard(rowApply),dayCopySheet:b=>dayCopySheet(b.dataset.d),dayCopy:guard(dayCopy),
   forgotSheet:()=>forgotSheet(),forgotSend:guard(forgotSend),linkEmailSheet:()=>linkEmailSheet(),linkEmailSend:guard(linkEmailSend),
-  bNewVenueSheet:()=>bNewVenueSheet(),bDemo:guard(bDemo),bNewVenueSave:guard(bNewVenueSave),
+  bNewVenueSheet:()=>bNewVenueSheet(),bDemo:guard(bDemo),demoIn:guard(demoIn),demoOut:guard(demoOut),bNewVenueSave:guard(bNewVenueSave),
   actSheet:()=>{actSheet();render();header()},
   payOnToggle:guard(async()=>{const on=V.payOn===false;await updateDoc(vref(),{payOn:on});act('payOn',on?t('turnOn'):t('turnOff'));say(t('saved'))}),
   help:()=>helpSheet(),
