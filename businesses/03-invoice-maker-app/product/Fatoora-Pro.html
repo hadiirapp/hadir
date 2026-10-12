@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fatoora · Invoice Maker</title>
+<meta name="description" content="Make professional invoices, quotes and receipts in Arabic or English in seconds. Saves on your device, prints to PDF.">
+<style>
+:root{--brand:#0F766E;--ink:#111827;--muted:#6B7280;--line:#E5E7EB;--bg:#F3F4F6;--card:#fff}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,"Noto Naskh Arabic",sans-serif;color:var(--ink);background:var(--bg)}
+header.app{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 16px;background:#111827;color:#fff;flex-wrap:wrap}
+header.app b{font-size:20px}
+header.app .pro{background:#FDE047;color:#111827;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:800;margin-inline-start:6px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}
+button,select,input,textarea{font:inherit}
+button{border:0;border-radius:10px;padding:9px 14px;cursor:pointer;background:#374151;color:#fff;font-weight:600}
+button.primary{background:var(--brand)}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+button.danger{background:#B91C1C}
+main{display:grid;grid-template-columns:minmax(320px,440px) 1fr;gap:16px;padding:16px;max-width:1400px;margin:0 auto}
+@media (max-width:900px){main{grid-template-columns:1fr}}
+.panel{background:var(--card);border-radius:14px;padding:16px;border:1px solid var(--line)}
+.panel h3{margin:18px 0 8px;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.panel h3:first-child{margin-top:0}
+label{display:block;font-size:13px;color:var(--muted);margin:8px 0 3px}
+input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+textarea{min-height:60px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.items .it{display:grid;grid-template-columns:1fr 64px 90px 30px;gap:6px;margin-bottom:6px}
+.items .it button{padding:0;background:#FEE2E2;color:#B91C1C}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.swatches button{width:30px;height:30px;border-radius:50%;padding:0;border:3px solid #fff;box-shadow:0 0 0 1px var(--line)}
+.swatches button.on{box-shadow:0 0 0 3px var(--ink)}
+.locked{opacity:.35;pointer-events:none}
+.hist{max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.hist div{display:flex;justify-content:space-between;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}
+.hist div:hover{background:#F9FAFB}
+.upsell{background:#FEF9C3;border:1px solid #FDE047;border-radius:10px;padding:10px;font-size:13px;margin-top:12px}
+/* ---------- the document ---------- */
+.paper-wrap{overflow:auto}
+.paper{background:#fff;width:210mm;min-height:297mm;margin:0 auto;padding:16mm 16mm 22mm;box-shadow:0 10px 30px rgba(0,0,0,.08);position:relative;color:#111827;font-size:13px}
+.doc-top{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+.doc-top img{max-height:70px;max-width:180px;object-fit:contain}
+.doc-title{font-size:34px;font-weight:800;color:var(--brand);letter-spacing:.02em;text-align:end}
+.doc-meta{text-align:end;color:#374151;line-height:1.6}
+.parties{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:26px 0 18px}
+.parties .lbl{font-size:11px;text-transform:uppercase;color:var(--brand);font-weight:800;letter-spacing:.06em;margin-bottom:4px}
+.parties div{white-space:pre-line;line-height:1.5}
+table.lines{width:100%;border-collapse:collapse;margin-top:6px}
+table.lines th{background:var(--brand);color:#fff;text-align:start;padding:9px 10px;font-size:12px}
+table.lines td{padding:9px 10px;border-bottom:1px solid #E5E7EB;vertical-align:top}
+table.lines .n{text-align:end;white-space:nowrap}
+.totals{margin-inline-start:auto;width:280px;margin-top:14px}
+.totals div{display:flex;justify-content:space-between;padding:5px 0}
+.totals .grand{border-top:2px solid var(--brand);margin-top:6px;padding-top:10px;font-size:18px;font-weight:800;color:var(--brand)}
+.notes{margin-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.notes .lbl{font-size:11px;text-transform:uppercase;color:var(--brand);font-weight:800;margin-bottom:4px}
+.notes div{white-space:pre-line;line-height:1.5}
+.status{position:absolute;top:60px;left:50%;transform:translateX(-50%) rotate(-14deg);border:4px solid #15803D;color:#15803D;font-weight:900;font-size:30px;padding:4px 16px;border-radius:8px;opacity:.75}
+.watermark{position:absolute;bottom:8mm;left:0;right:0;text-align:center;font-size:11px;color:#9CA3AF}
+.paper.rtl{direction:rtl}
+@media print{
+  @page{size:A4;margin:0}
+  body{background:#fff}
+  header.app,.panel.editor,.upsell{display:none!important}
+  main{display:block;padding:0}
+  .paper{box-shadow:none;margin:0;width:auto;min-height:auto}
+}
+</style>
+</head>
+<body>
+<header class="app">
+  <div><b>Fatoora · فاتورة</b><span class="pro" id="proBadge" hidden>PRO</span></div>
+  <div class="toolbar">
+    <button class="ghost" id="uiLang" style="color:#fff">العربية</button>
+    <button id="btnNew">+ New</button>
+    <button id="btnSave">Save</button>
+    <button class="primary" id="btnPrint">⬇ PDF / Print</button>
+  </div>
+</header>
+<main>
+  <section class="panel editor">
+    <h3 data-t="docSettings">Document</h3>
+    <div class="row3">
+      <div><label data-t="type">Type</label><select id="docType"></select></div>
+      <div><label data-t="docLang">Language</label><select id="docLang"><option value="en">English</option><option value="ar">العربية</option></select></div>
+      <div><label data-t="currency">Currency</label><input id="currency" value="$"></div>
+    </div>
+    <div class="row3">
+      <div><label data-t="number">Number</label><input id="number"></div>
+      <div><label data-t="date">Date</label><input type="date" id="date"></div>
+      <div><label data-t="due">Due</label><input type="date" id="due"></div>
+    </div>
+    <label data-t="color">Colour</label>
+    <div class="swatches" id="swatches"></div>
+    <label><input type="checkbox" id="paid" style="width:auto"> <span data-t="markPaid">Mark as PAID</span></label>
+
+    <h3 data-t="from">From (your business)</h3>
+    <label data-t="logo">Logo</label><input type="file" id="logo" accept="image/*">
+    <label data-t="bizName">Business name</label><input id="bizName">
+    <label data-t="bizDetails">Address, phone, email, tax no.</label><textarea id="bizDetails"></textarea>
+
+    <h3 data-t="to">Bill to</h3>
+    <label data-t="clientName">Client name</label><input id="clientName">
+    <label data-t="clientDetails">Client address / email</label><textarea id="clientDetails"></textarea>
+
+    <h3 data-t="itemsH">Items</h3>
+    <div class="items" id="items"></div>
+    <button class="ghost" id="addItem" data-t="addItem">+ Add line</button>
+    <div class="row3" style="margin-top:8px">
+      <div><label data-t="taxPct">Tax %</label><input type="number" id="tax" value="0" min="0" step="0.01"></div>
+      <div><label data-t="discount">Discount</label><input type="number" id="discount" value="0" min="0" step="0.01"></div>
+      <div><label data-t="shipping">Shipping</label><input type="number" id="shipping" value="0" min="0" step="0.01"></div>
+    </div>
+
+    <h3 data-t="extra">Notes &amp; payment</h3>
+    <label data-t="notes">Notes / terms</label><textarea id="notes"></textarea>
+    <label data-t="payment">Payment details (IBAN, PayPal…)</label><textarea id="payment"></textarea>
+
+    <h3 data-t="history">Saved documents</h3>
+    <div class="hist" id="hist"></div>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button class="ghost" id="exportJson" data-t="backup">Backup</button>
+      <label class="ghost" style="margin:0;border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer;color:var(--ink)"><span data-t="restore">Restore</span><input type="file" id="importJson" accept="application/json" hidden></label>
+    </div>
+    <div class="upsell" id="upsell"></div>
+  </section>
+  <section class="paper-wrap"><div class="paper" id="paper"></div></section>
+</main>
+<script>
+const PRO = true;
+const BUY_URL = "YOUR_CHECKOUT_LINK";
+const COLORS = ["#0F766E","#1D4ED8","#7C3AED","#DB2777","#EA580C","#111827","#B45309","#15803D"];
+const FREE_COLORS = 1;
+const STORE = "fatoora.v1";
+
+const T = {
+  en:{docSettings:"Document",type:"Type",docLang:"Document language",currency:"Currency",number:"Number",date:"Date",due:"Due",
+      color:"Colour",markPaid:"Mark as PAID",from:"From (your business)",logo:"Logo",bizName:"Business name",
+      bizDetails:"Address, phone, email, tax no.",to:"Bill to",clientName:"Client name",clientDetails:"Client address / email",
+      itemsH:"Items",addItem:"+ Add line",taxPct:"Tax %",discount:"Discount",shipping:"Shipping",extra:"Notes & payment",
+      notes:"Notes / terms",payment:"Payment details (IBAN, PayPal…)",history:"Saved documents",backup:"Backup",restore:"Restore",
+      newB:"+ New",save:"Save",print:"⬇ PDF / Print",saved:"Saved ✓",del:"Delete this document?",
+      upsell:"Free version: 1 colour + a small “Made with Fatoora” footer. Pro removes the footer, unlocks all 8 colours and works 100% offline.",
+      buy:"Get Pro →",desc:"Description",qty:"Qty",price:"Price"},
+  ar:{docSettings:"المستند",type:"النوع",docLang:"لغة المستند",currency:"العملة",number:"الرقم",date:"التاريخ",due:"الاستحقاق",
+      color:"اللون",markPaid:"تم الدفع",from:"من (نشاطك التجاري)",logo:"الشعار",bizName:"اسم النشاط",
+      bizDetails:"العنوان، الهاتف، الإيميل، الرقم الضريبي",to:"إلى",clientName:"اسم العميل",clientDetails:"عنوان / إيميل العميل",
+      itemsH:"البنود",addItem:"+ إضافة بند",taxPct:"الضريبة %",discount:"خصم",shipping:"شحن",extra:"ملاحظات ودفع",
+      notes:"ملاحظات / شروط",payment:"معلومات الدفع (IBAN، PayPal…)",history:"المستندات المحفوظة",backup:"نسخة احتياطية",restore:"استرجاع",
+      newB:"+ جديد",save:"حفظ",print:"⬇ PDF / طباعة",saved:"تم الحفظ ✓",del:"حذف هذا المستند؟",
+      upsell:"النسخة المجانية: لون واحد وسطر صغير «صُنع بـ فاتورة». نسخة Pro بتشيل السطر وبتفتح 8 ألوان وبتشتغل بدون إنترنت.",
+      buy:"احصل على Pro ←",desc:"الوصف",qty:"الكمية",price:"السعر"}
+};
+const DOC = {
+  en:{invoice:"INVOICE",quote:"QUOTE",receipt:"RECEIPT",from:"From",to:"Bill to",no:"No.",date:"Date",due:"Due",desc:"Description",qty:"Qty",
+      price:"Price",amount:"Amount",sub:"Subtotal",disc:"Discount",tax:"Tax",ship:"Shipping",total:"Total",notes:"Notes",pay:"Payment details",paid:"PAID",
+      types:{invoice:"Invoice",quote:"Quote",receipt:"Receipt"}},
+  ar:{invoice:"فاتورة",quote:"عرض سعر",receipt:"إيصال",from:"من",to:"إلى",no:"رقم",date:"التاريخ",due:"الاستحقاق",desc:"الوصف",qty:"الكمية",
+      price:"السعر",amount:"المبلغ",sub:"المجموع الفرعي",disc:"خصم",tax:"ضريبة",ship:"شحن",total:"الإجمالي",notes:"ملاحظات",pay:"معلومات الدفع",paid:"مدفوع",
+      types:{invoice:"فاتورة",quote:"عرض سعر",receipt:"إيصال"}}
+};
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const u = s => `<bdi>${esc(s)}</bdi>`;  // user text keeps its own direction inside RTL/LTR docs
+const today = () => new Date().toISOString().slice(0,10);
+const plusDays = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x.toISOString().slice(0,10); };
+
+let ui = "en";
+let db = load();
+let doc = blank();
+
+function load(){
+  try { return JSON.parse(localStorage.getItem(STORE)) || {docs:[], profile:{}, seq:1}; }
+  catch { return {docs:[], profile:{}, seq:1}; }
+}
+function persist(){ try { localStorage.setItem(STORE, JSON.stringify(db)); } catch {} }
+
+function blank(){
+  const p = db.profile || {};
+  return {id: null, type:"invoice", lang:p.lang||"en", currency:p.currency||"$", number:"INV-"+String(db.seq).padStart(4,"0"),
+    date: today(), due: plusDays(today(), 14), color: p.color || COLORS[0], paid:false,
+    logo:p.logo||"", bizName:p.bizName||"", bizDetails:p.bizDetails||"", clientName:"", clientDetails:"",
+    items:[{d:"",q:1,p:0}], tax:p.tax||0, discount:0, shipping:0, notes:p.notes||"", payment:p.payment||""};
+}
+
+const fields = ["type","lang","currency","number","date","due","bizName","bizDetails","clientName","clientDetails","tax","discount","shipping","notes","payment"];
+const idOf = {type:"docType", lang:"docLang"};
+
+function fillForm(){
+  const D = DOC[doc.lang];
+  $("docType").innerHTML = ["invoice","quote","receipt"].map(k=>`<option value="${k}">${D.types[k]}</option>`).join("");
+  fields.forEach(f => $(idOf[f]||f).value = doc[f]);
+  $("paid").checked = doc.paid;
+  renderItems(); renderSwatches(); render();
+}
+
+function readForm(){
+  fields.forEach(f => { const v = $(idOf[f]||f).value; doc[f] = ["tax","discount","shipping"].includes(f) ? (parseFloat(v)||0) : v; });
+  doc.paid = $("paid").checked;
+}
+
+function renderItems(){
+  const t = T[ui];
+  $("items").innerHTML = doc.items.map((it,i)=>`<div class="it">
+    <input dir="auto" data-i="${i}" data-k="d" placeholder="${t.desc}" value="${esc(it.d)}">
+    <input data-i="${i}" data-k="q" type="number" step="any" placeholder="${t.qty}" value="${it.q}">
+    <input data-i="${i}" data-k="p" type="number" step="any" placeholder="${t.price}" value="${it.p}">
+    <button data-del="${i}" aria-label="remove">×</button></div>`).join("");
+}
+
+function renderSwatches(){
+  $("swatches").innerHTML = COLORS.map((c,i)=>`<button style="background:${c}" data-c="${c}" class="${c===doc.color?"on":""} ${!PRO&&i>=FREE_COLORS?"locked":""}" aria-label="${c}"></button>`).join("");
+}
+
+function money(n){
+  const v = (Math.round(n*100)/100).toLocaleString(doc.lang==="ar"?"ar":"en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+  return doc.lang==="ar" ? `${v} ${esc(doc.currency)}` : `${esc(doc.currency)}${v}`;
+}
+
+function totals(){
+  const sub = doc.items.reduce((s,it)=>s+(parseFloat(it.q)||0)*(parseFloat(it.p)||0),0);
+  const afterDisc = Math.max(0, sub - doc.discount);
+  const tax = afterDisc * doc.tax / 100;
+  return {sub, tax, total: afterDisc + tax + doc.shipping};
+}
+
+function render(){
+  const D = DOC[doc.lang], t = totals();
+  document.documentElement.style.setProperty("--brand", doc.color);
+  const p = $("paper");
+  p.className = "paper" + (doc.lang==="ar" ? " rtl" : "");
+  p.innerHTML = `
+    <div class="doc-top">
+      <div>${doc.logo?`<img src="${doc.logo}" alt="">`:`<div style="font-size:22px;font-weight:800">${u(doc.bizName)}</div>`}</div>
+      <div><div class="doc-title">${D[doc.type]}</div>
+        <div class="doc-meta">${D.no}: <b>${u(doc.number)}</b><br>${D.date}: ${esc(doc.date)}${doc.type!=="receipt"&&doc.due?`<br>${D.due}: ${esc(doc.due)}`:""}</div></div>
+    </div>
+    ${doc.paid?`<div class="status">${D.paid}</div>`:""}
+    <div class="parties">
+      <div><div class="lbl">${D.from}</div><b>${u(doc.bizName)}</b>\n${u(doc.bizDetails)}</div>
+      <div><div class="lbl">${D.to}</div><b>${u(doc.clientName)}</b>\n${u(doc.clientDetails)}</div>
+    </div>
+    <table class="lines"><thead><tr><th>${D.desc}</th><th class="n">${D.qty}</th><th class="n">${D.price}</th><th class="n">${D.amount}</th></tr></thead>
+    <tbody>${doc.items.filter(it=>it.d||+it.p).map(it=>`<tr><td>${u(it.d)}</td><td class="n">${esc(it.q)}</td><td class="n">${money(+it.p||0)}</td><td class="n">${money((+it.q||0)*(+it.p||0))}</td></tr>`).join("")}</tbody></table>
+    <div class="totals">
+      <div><span>${D.sub}</span><span>${money(t.sub)}</span></div>
+      ${doc.discount?`<div><span>${D.disc}</span><span>-${money(doc.discount)}</span></div>`:""}
+      ${doc.tax?`<div><span>${D.tax} (${doc.tax}%)</span><span>${money(t.tax)}</span></div>`:""}
+      ${doc.shipping?`<div><span>${D.ship}</span><span>${money(doc.shipping)}</span></div>`:""}
+      <div class="grand"><span>${D.total}</span><span>${money(t.total)}</span></div>
+    </div>
+    <div class="notes">
+      ${doc.notes?`<div><div class="lbl">${D.notes}</div>${u(doc.notes)}</div>`:"<div></div>"}
+      ${doc.payment?`<div><div class="lbl">${D.pay}</div>${u(doc.payment)}</div>`:""}
+    </div>
+    ${PRO?"":`<div class="watermark">Made with Fatoora · فاتورة — free invoice maker</div>`}`;
+  renderHist();
+}
+
+function renderHist(){
+  $("hist").innerHTML = db.docs.slice().reverse().map(d=>{
+    const tt = (()=>{ const o = doc; doc = d; const r = totals().total; const m = money(r); doc = o; return m; })();
+    return `<div data-open="${d.id}"><span>${esc(d.number)} · ${esc(d.clientName||"—")}</span><span>${tt} <button class="danger" data-rm="${d.id}" style="padding:2px 8px">×</button></span></div>`;
+  }).join("") || `<div style="color:var(--muted)">—</div>`;
+}
+
+function applyUi(){
+  const t = T[ui];
+  document.documentElement.lang = ui; document.documentElement.dir = ui==="ar"?"rtl":"ltr";
+  document.querySelectorAll("[data-t]").forEach(el=>{ if(t[el.dataset.t]) el.textContent = t[el.dataset.t]; });
+  $("uiLang").textContent = ui==="ar" ? "English" : "العربية";
+  $("btnNew").textContent = t.newB; $("btnSave").textContent = t.save; $("btnPrint").textContent = t.print;
+  $("upsell").innerHTML = PRO ? "" : `${t.upsell} <a href="${BUY_URL}" target="_blank" rel="noopener"><b>${t.buy}</b></a>`;
+  $("upsell").hidden = PRO;
+  $("proBadge").hidden = !PRO;
+  renderItems();
+}
+
+function save(){
+  readForm();
+  if(!doc.id){ doc.id = Date.now().toString(36); db.seq++; db.docs.push(structuredClone(doc)); }
+  else { const i = db.docs.findIndex(d=>d.id===doc.id); db.docs[i] = structuredClone(doc); }
+  db.profile = {lang:doc.lang,currency:doc.currency,color:doc.color,logo:doc.logo,bizName:doc.bizName,bizDetails:doc.bizDetails,tax:doc.tax,notes:doc.notes,payment:doc.payment};
+  persist(); render();
+  const b = $("btnSave"); b.textContent = T[ui].saved; setTimeout(()=>b.textContent=T[ui].save,1200);
+}
+
+// events
+document.querySelector(".editor").addEventListener("input", e=>{
+  const el = e.target;
+  if(el.dataset.k){ doc.items[+el.dataset.i][el.dataset.k] = el.value; render(); return; }
+  if(el.id==="logo"||el.id==="importJson") return;
+  const before = doc.lang; readForm();
+  if(before!==doc.lang){ fillForm(); return; }
+  render();
+});
+$("paid").addEventListener("change", ()=>{ readForm(); render(); });
+$("items").addEventListener("click", e=>{ const i = e.target.dataset.del; if(i!==undefined){ doc.items.splice(+i,1); if(!doc.items.length) doc.items.push({d:"",q:1,p:0}); renderItems(); render(); }});
+$("addItem").onclick = ()=>{ doc.items.push({d:"",q:1,p:0}); renderItems(); };
+$("swatches").onclick = e=>{ const c = e.target.dataset.c; if(c){ doc.color = c; renderSwatches(); render(); }};
+$("logo").onchange = e=>{ const f = e.target.files[0]; if(!f) return; const r = new FileReader();
+  r.onload = ()=>{ const img = new Image(); img.onload = ()=>{ const s = Math.min(1, 400/Math.max(img.width,img.height)); const c = document.createElement("canvas");
+    c.width = img.width*s; c.height = img.height*s; c.getContext("2d").drawImage(img,0,0,c.width,c.height); doc.logo = c.toDataURL("image/png"); render(); }; img.src = r.result; };
+  r.readAsDataURL(f); };
+$("hist").onclick = e=>{
+  if(e.target.dataset.rm){ e.stopPropagation(); if(confirm(T[ui].del)){ db.docs = db.docs.filter(d=>d.id!==e.target.dataset.rm); persist(); renderHist(); } return; }
+  const row = e.target.closest("[data-open]"); if(row){ doc = structuredClone(db.docs.find(d=>d.id===row.dataset.open)); fillForm(); }
+};
+$("btnNew").onclick = ()=>{ doc = blank(); fillForm(); };
+$("btnSave").onclick = save;
+$("btnPrint").onclick = ()=>{ readForm(); render(); window.print(); };
+$("uiLang").onclick = ()=>{ ui = ui==="en"?"ar":"en"; applyUi(); };
+$("exportJson").onclick = ()=>{ const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(db)],{type:"application/json"}));
+  a.download = "fatoora-backup.json"; a.click(); };
+$("importJson").onchange = e=>{ const f = e.target.files[0]; if(!f) return; f.text().then(s=>{ try{ const d = JSON.parse(s); if(Array.isArray(d.docs)){ db = d; persist(); doc = blank(); fillForm(); } }catch{} }); };
+
+if((navigator.language||"").startsWith("ar")) ui = "ar";
+document.querySelectorAll("input:not([type]),textarea").forEach(el => el.dir = "auto");
+applyUi(); fillForm();
+</script>
+</body>
+</html>
