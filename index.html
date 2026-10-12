@@ -522,7 +522,7 @@ const myDev=()=>{let d=lsGet('hadir-dev');if(!d){d='d'+rid()+rid();lsSet('hadir-
 const myOpen=()=>logs.find(x=>x.uid===U.uid&&!x.o&&!isStale(x));
 const BOSS='iiiialykh@gmail.com',WA='96171857823',GRACE=3*864e5;
 const isBoss=()=>!!(auth.currentUser&&(auth.currentUser.email||'').toLowerCase()===BOSS);
-function subInfo(v){v=v||V;if(!v)return{state:'ok'};if(v.status==='deleted')return{state:'blocked',deleted:true};if(v.status==='pending')return{state:'blocked',pending:true};if(v.status==='suspended')return{state:'blocked',susp:true};const pu=tsMs(v.paidUntil);if(!pu)return{state:'ok'};const now=Date.now();
+function subInfo(v){v=v||V;if(!v)return{state:'ok'};if(v.demo&&v.status==='active')return{state:'ok'};if(v.status==='deleted')return{state:'blocked',deleted:true};if(v.status==='pending')return{state:'blocked',pending:true};if(v.status==='suspended')return{state:'blocked',susp:true};const pu=tsMs(v.paidUntil);if(!pu)return{state:'ok'};const now=Date.now();
   if(now<=pu){const d=Math.ceil((pu-now)/864e5);return{state:d<=5?'soon':'ok',days:d,pu}}if(now<=pu+GRACE)return{state:'grace',pu};return{state:'blocked',pu}}
 let RO=false,bossList=null;
 const waLink=()=>`https://wa.me/${WA}?text=${encodeURIComponent(t('renewMsg',V.name,V.code))}`;
@@ -1299,7 +1299,7 @@ async function cfgSave(){const d={price:$('cp1').value.trim(),whish:$('cp2').val
 /* ---------- owner (Hadir) panel ---------- */
 async function loadBoss(){const q=await getDocs(collection(db,'venues'));bossList=q.docs.map(d=>({...d.data(),id:d.id})).sort((a,b)=>String(a.name).localeCompare(String(b.name)));render()}
 function viewBoss(){if(!bossList){loadBoss().catch(e=>say(errT(e),1));return `<div class="card mute">${t('loading')}</div>`}
-  return `<button class="btn fill block" style="margin-top:12px" data-a="bNewVenueSheet">${t('newVenue')}</button><button class="btn block" style="margin-top:12px" data-a="cfgSheet">${t('cfgTitle')}</button><div class="card mute">${t('bHint')}</div><div class="card"><div class="top" style="margin-bottom:6px"><h2 style="margin:0">${t('aBoss')} (${bossList.filter(v=>v.status!=='deleted').length})</h2>${bossList.some(v=>v.status==='deleted')?`<button class="btn sm" data-a="bShowDel">${showDel?t('bHideDel'):t('bShowDel',bossList.filter(v=>v.status==='deleted').length)}</button>`:''}</div><div class="list">${bossList.filter(v=>showDel||v.status!=='deleted').map(v=>{const si=subInfo(v);
+  return `<button class="btn block" style="margin-top:12px" data-a="bDemo">${lang==='ar'?'ديمو ١٥ دقيقة':'Demo · 15 min'}</button><button class="btn fill block" style="margin-top:12px" data-a="bNewVenueSheet">${t('newVenue')}</button><button class="btn block" style="margin-top:12px" data-a="cfgSheet">${t('cfgTitle')}</button><div class="card mute">${t('bHint')}</div><div class="card"><div class="top" style="margin-bottom:6px"><h2 style="margin:0">${t('aBoss')} (${bossList.filter(v=>v.status!=='deleted').length})</h2>${bossList.some(v=>v.status==='deleted')?`<button class="btn sm" data-a="bShowDel">${showDel?t('bHideDel'):t('bShowDel',bossList.filter(v=>v.status==='deleted').length)}</button>`:''}</div><div class="list">${bossList.filter(v=>showDel||v.status!=='deleted').map(v=>{const si=subInfo(v);
     if(si.deleted)return `<div class="row"><span>${esc(v.name)} <span class="mute ltr num">${esc(v.code)}</span><div><span class="badge bad">${t('bDeleted')}</span></div></span><span class="hb"><button class="btn sm" data-a="bRestore" data-id="${esc(v.id)}">${t('bRestore')}</button><button class="btn sm bad fill" data-a="bWipe" data-id="${esc(v.id)}">${t('bWipe')}</button></span></div>`;
     const st=si.pending?`<span class="badge warn">${t('bPending')}</span>`:si.susp?`<span class="badge bad">${t('bSusp')}</span>`:!si.pu?`<span class="badge">${t('bNoEnd')}</span>`:si.state==='blocked'?`<span class="badge bad">${t('bExpired',dateS(si.pu))}</span>`:si.state==='grace'?`<span class="badge warn">${t('bGrace',dateS(si.pu))}</span>`:`<span class="badge ${si.state==='soon'?'warn':'ok'}">${t('bActive',dateS(si.pu),si.days)}</span>`;
     return `<div class="row"><span>${esc(v.name)} <span class="mute ltr num">${esc(v.code)}</span><div>${st}</div></span><span class="hb"><button class="btn sm" data-a="bOwnerSheet" data-id="${esc(v.id)}">${t('bAddOwner')}</button><button class="btn sm" data-a="bAdminSheet" data-id="${esc(v.id)}">${t('bAddAdmin')}</button><button class="btn sm fill" data-a="bExt" data-id="${esc(v.id)}">${t('bExt')}</button>${si.pending?'':`<button class="btn sm${si.susp?'':' bad'}" data-a="bTog" data-id="${esc(v.id)}">${si.susp?t('bResume'):t('bSuspend')}</button>`}<button class="btn sm bad" data-a="bDel" data-id="${esc(v.id)}">${t('bDel')}</button></span></div>`}).join('')}</div></div>`}
@@ -1323,6 +1323,28 @@ function bNewVenueSheet(){openSheet(`<h2>${t('newVenueTitle')}</h2><div class="m
 async function bNewVenueSave(){const nm=($('nvn').value||'').trim();if(!nm)return smsg(t('fillAll'));
   await addDoc(collection(db,'venues'),{name:nm,code:mkCode(),ownerUid:auth.currentUser.uid,lat:null,lng:null,radius:100,grace:10,cutoff:'05:00',status:'pending',lists:defaultLists(),alertTypes:defaultAlerts(),pingTypes:defaultPings(),positions:defaultPositions()});
   closeSheet();say(t('saved'));bossList=null;await loadBoss()}
+const DEMO_MS=15*60e3;
+async function bDemo(){const un='demo'+mkCode(),pw=String(100000+Math.random()*900000|0),em=fakeEm(un);
+  const v=await addDoc(collection(db,'venues'),{name:'Demo Lounge',code:mkCode(),ownerUid:auth.currentUser.uid,lat:null,lng:null,radius:100,grace:10,cutoff:'05:00',status:'pending',lists:defaultLists(),alertTypes:defaultAlerts(),pingTypes:defaultPings(),positions:defaultPositions(),demo:true});
+  await updateDoc(doc(db,'venues',v.id),{status:'active',paidUntil:Timestamp.fromMillis(Date.now()+864e5-GRACE)});
+  const uid=await newAcct({un,em,pw});await setDoc(doc(db,'users',uid),{role:'owner',venueId:v.id,venueIds:[v.id],name:'Demo',email:em,username:un});
+  lastInvite=`Hadir demo (15 min)\n${APP_URL}\n\nUsername: ${un}\nPassword: ${pw}\n\nThe 15 minutes start when you log in.`;
+  openSheet(`<h2>✓ Demo</h2><pre class="inv">${esc(lastInvite)}</pre><button class="btn fill block" data-a="shareInvite">${t('shareInvite')}</button>`);bossList=null;loadBoss()}
+let demoSeeding=false;
+async function demoSeed(){try{const pos=V.positions||defaultPositions(),now=Date.now(),H=36e5;
+  const ppl=[['Rami',0,-3.2*H],['Maya',2,-3*H],['Karim',2,-2.6*H],['Lea',3,-2.1*H],['Jad',4,-1.4*H],['Nour',5,null],['Tarek',6,-2.9*H],['Sara',4,null]];
+  const b=writeBatch(db);ppl.forEach(([n,pi],i)=>{const id='demo'+i;b.set(doc(db,'venues',V.id,'staff',id),{name:n,username:n.toLowerCase(),start:'18:00',end:'02:00',offDays:[],pos:pos[pi%pos.length]||'',since:bizDate(now-90*864e5),canCash:i===6,active:true,pid:id});b.set(doc(db,'venues',V.id,'pay',id),{payType:'hour',rate:5})});await b.commit();
+  for(let i=0;i<ppl.length;i++){const [n,,off]=ppl[i];if(off!=null)await addDoc(col('logs'),{uid:'demo'+i,name:n,inAt:Timestamp.fromMillis(now+off),outAt:null,manual:true})}}catch(e){}}
+function demoCheck(){let bar=document.getElementById('demoBar');
+  if(!V||!V.demo||!U||U.role==='boss'){if(bar)bar.remove();return}
+  if(!V.demoStart&&isAdm()&&!demoSeeding){demoSeeding=true;V.demoStart=Timestamp.fromMillis(Date.now());updateDoc(vref(),{demoStart:V.demoStart}).catch(()=>{});demoSeed()}
+  const left=(tsMs(V.demoStart)||Date.now())+DEMO_MS-Date.now();
+  if(left<=0){if(bar)bar.remove();clearSessions();V=null;signOut(auth).catch(()=>{});demoOver();return}
+  if(!bar){bar=document.createElement('div');bar.id='demoBar';bar.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom));z-index:99;background:#0F3D38;color:#7FE0CF;border:1px solid #1d6b62;border-radius:20px;padding:6px 14px;font-size:.8rem;font-weight:600;pointer-events:none';document.body.appendChild(bar)}
+  const m=Math.floor(left/6e4),sc=Math.floor(left%6e4/1e3);bar.textContent=(lang==='ar'?'ديمو · باقي ':'Demo · ')+m+':'+String(sc).padStart(2,'0')+(lang==='ar'?'':' left')}
+function demoOver(){const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;z-index:999;background:#0B1F1D;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:14px';
+  d.innerHTML=`<div style="font-size:1.5rem;font-weight:800">${lang==='ar'?'خلص الديمو':'Your demo has ended'}</div><div style="opacity:.8">${lang==='ar'?'عجبك؟ تواصل معنا لتاخد Hadir لمحلك':'Liked it? Contact us to get Hadir for your venue.'}</div><a href="https://wa.me/${WA}?text=${encodeURIComponent('Hi Hadir, I tried the demo and I want Hadir for my venue')}" style="background:#7FE0CF;color:#0B1F1D;padding:12px 22px;border-radius:12px;font-weight:700;text-decoration:none">WhatsApp</a>`;document.body.appendChild(d)}
+setInterval(demoCheck,1000);
 async function bExt(b){const v=bossList.find(x=>x.id===b.dataset.id);if(!v)return;const base=Math.max(Date.now(),tsMs(v.paidUntil)||0);const d=new Date(base);d.setMonth(d.getMonth()+1);
   await updateDoc(doc(db,'venues',v.id),{paidUntil:Timestamp.fromDate(d),status:'active'});say(t('saved'));await loadBoss()}
 async function bTog(b){const v=bossList.find(x=>x.id===b.dataset.id);if(!v)return;const susp=v.status==='suspended';if(!susp&&!confirm(t('bConfirm',v.name)))return;
@@ -1575,7 +1597,7 @@ const A={
   cpick:b=>{cDraft[b.dataset.g][b.dataset.k]=b.dataset.v;renderColorSheet()},
   rowSheet:b=>rowSheet(b.dataset.p),rowApply:guard(rowApply),dayCopySheet:b=>dayCopySheet(b.dataset.d),dayCopy:guard(dayCopy),
   forgotSheet:()=>forgotSheet(),forgotSend:guard(forgotSend),linkEmailSheet:()=>linkEmailSheet(),linkEmailSend:guard(linkEmailSend),
-  bNewVenueSheet:()=>bNewVenueSheet(),bNewVenueSave:guard(bNewVenueSave),
+  bNewVenueSheet:()=>bNewVenueSheet(),bDemo:guard(bDemo),bNewVenueSave:guard(bNewVenueSave),
   actSheet:()=>{actSheet();render();header()},
   payOnToggle:guard(async()=>{const on=V.payOn===false;await updateDoc(vref(),{payOn:on});act('payOn',on?t('turnOn'):t('turnOff'));say(t('saved'))}),
   help:()=>helpSheet(),
