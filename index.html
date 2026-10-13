@@ -1324,11 +1324,11 @@ async function bNewVenueSave(){const nm=($('nvn').value||'').trim();if(!nm)retur
   await addDoc(collection(db,'venues'),{name:nm,code:mkCode(),ownerUid:auth.currentUser.uid,lat:null,lng:null,radius:100,grace:10,cutoff:'05:00',status:'pending',lists:defaultLists(),alertTypes:defaultAlerts(),pingTypes:defaultPings(),positions:defaultPositions()});
   closeSheet();say(t('saved'));bossList=null;await loadBoss()}
 const DEMO_MS=15*60e3;
-async function bDemo(){const un='demo'+mkCode(),pw=String(100000+Math.random()*900000|0),em=fakeEm(un);
-  const v=await addDoc(collection(db,'venues'),{name:'Demo Lounge',code:mkCode(),ownerUid:auth.currentUser.uid,lat:null,lng:null,radius:100,grace:10,cutoff:'05:00',status:'pending',lists:defaultLists(),alertTypes:defaultAlerts(),pingTypes:defaultPings(),positions:defaultPositions(),demo:true});
+async function bDemo(){const nm=((prompt(lang==='ar'?'اسم المحل بالديمو':'Demo venue name','Demo Lounge')||'').trim()||'Demo Lounge').slice(0,40),un='demo'+mkCode(),pw=String(100000+Math.random()*900000|0),em=fakeEm(un);
+  const v=await addDoc(collection(db,'venues'),{name:nm,code:mkCode(),ownerUid:auth.currentUser.uid,lat:null,lng:null,radius:100,grace:10,cutoff:'05:00',status:'pending',lists:defaultLists(),alertTypes:defaultAlerts(),pingTypes:defaultPings(),positions:defaultPositions(),demo:true});
   await updateDoc(doc(db,'venues',v.id),{status:'active',paidUntil:Timestamp.fromMillis(Date.now()+864e5-GRACE)});
   const uid=await newAcct({un,em,pw});await setDoc(doc(db,'users',uid),{role:'owner',venueId:v.id,venueIds:[v.id],name:'Demo',email:em,username:un});
-  lastInvite=`Hadir demo (15 min)\n${APP_URL}\n\nUsername: ${un}\nPassword: ${pw}\n\nThe 15 minutes start when you log in.`;
+  lastInvite=`Hadir demo · ${nm} (15 min)\n${APP_URL}\n\nUsername: ${un}\nPassword: ${pw}\n\nThe 15 minutes start when you log in.`;
   openSheet(`<h2>✓ Demo</h2><pre class="inv">${esc(lastInvite)}</pre><button class="btn fill block" data-a="shareInvite">${t('shareInvite')}</button>`);bossList=null;loadBoss()}
 let demoSeeding=false;
 async function demoSeed(){try{const pos=V.positions||defaultPositions(),now=Date.now(),H=36e5;
