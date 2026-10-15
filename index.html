@@ -562,6 +562,8 @@ function header(){if(V&&isOwner())$('vn').innerHTML=`<button class="linkb" data-
   const boss=!!(U&&U.role==='boss');$('out').hidden=!boss;$('out').textContent=t('logout');$('lng').hidden=!!U&&!boss;$('lng').textContent=t('langBtn');$('hlp').innerHTML=ic('help',20);{const ab=$('actb'),own=!!(U&&V&&isOwner());ab.hidden=!own;if(own)ab.innerHTML=ic('bell',20)+(acts.some(x=>x.at>actSeen())?'<i class="nb"></i>':'')}$('hlp').hidden=!!U&&!boss}
 function bnav(items,cur,act){const n=$('bnav');n.hidden=false;n.innerHTML=items.map(([k,i,l,b])=>{const sel=cur===k||(k==='set'&&['lists','all'].includes(cur));return `<button type="button" role="tab" data-a="${act}" data-k="${k}" aria-selected="${sel}">${ic(i,22)}<span>${l}</span>${b?'<i class="nb"></i>':''}</button>`}).join('')}
 const hideNav=()=>{const n=$('bnav');if(n){n.hidden=true;n.innerHTML=''}};
+function alertPop(){try{if(!isAdm())return;const u=alerts.filter(a=>!a.ackAt&&Date.now()-a.at<864e5).sort((a,b)=>b.at-a.at);if(!u.length)return;const a=u[0];let sh=[];try{sh=JSON.parse(lsGet('hadir-apop')||'[]')}catch(e){}if(sh.includes(a.id))return;sh.push(a.id);lsSet('hadir-apop',JSON.stringify(sh.slice(-50)));
+  openSheet(`<div class="alertPop" style="text-align:center"><div style="width:64px;height:64px;margin:4px auto 10px;border-radius:50%;background:rgba(240,110,100,.15);display:flex;align-items:center;justify-content:center;color:#F07A6E">${ic('bell',30)}</div><h2 style="margin:0 0 4px">${esc(a.name)}</h2><div style="font-size:1.15rem;font-weight:700">${esc(a.type)}</div>${a.note?`<div class="mute" style="margin-top:6px">${esc(a.note)}</div>`:''}<div class="mute num" style="margin-top:6px">${tm(a.at)}${u.length>1?` · +${u.length-1}`:''}</div><button class="btn fill block" style="margin-top:16px;padding:14px" data-a="ack" data-id="${esc(a.id)}">${t('ack')}</button></div>`)}catch(e){}}
 function alertBar(){const b=$('abar');if(!U){b.hidden=true;return}
   if(!isAdm()){const p=pings.filter(x=>!x.seenAt&&Date.now()-x.at<12*36e5).sort((a,b)=>b.at-a.at);if(!p.length){b.hidden=true;return}const x=p[0];b.hidden=false;
     b.innerHTML=`<span>${t('fromMgr',esc(x.from))} · ${esc(x.type)}${x.note?': '+esc(x.note):''} <span class="num">${tm(x.at)}</span>${p.length>1?` (+${p.length-1})`:''}</span><button data-a="seen" data-id="${esc(x.id)}">${t('seen')}</button>`;return}
@@ -1492,7 +1494,7 @@ function start(U0,V0){stop();U=U0;V=V0;bootAt=Date.now();say('');loadCfg().then(
       sub(col('staff'),s=>{staff=s.docs.map(d=>({...d.data(),id:d.id}));migratePay();render();planSoon()});
       const ls=new Date(Date.now()-3*864e5);
       sub(query(col('logs'),where('inAt','>=',ls)),s=>{logs=s.docs.map(norm);render()});
-      sub(query(col('alerts'),where('at','>=',new Date(Date.now()-864e5))),s=>{s.docChanges().forEach(c=>{if(c.type==='added'){const a=nal(c.doc);if(!a.ackAt&&a.at>bootAt-5000)beep()}});alerts=s.docs.map(nal);render()});
+      sub(query(col('alerts'),where('at','>=',new Date(Date.now()-864e5))),s=>{s.docChanges().forEach(c=>{if(c.type==='added'){const a=nal(c.doc);if(!a.ackAt&&a.at>bootAt-5000)beep()}});alerts=s.docs.map(nal);render();alertPop()});
       const d9=new Date();d9.setDate(d9.getDate()-9);
       sub(query(col('checks'),where('date','>=',ymd(d9))),s=>{checks=s.docs.map(nck);render()});
       {const w6=new Date();w6.setDate(w6.getDate()-42);sub(query(col('sched'),where('week','>=',weekOf(ymd(w6)))),s=>{scheds={};s.docs.forEach(d=>{scheds[d.id]=d.data()});render();if(isAdm())planSoon()})}
@@ -1546,7 +1548,7 @@ const A={
   ldel:b=>{draft.splice(+b.dataset.k,1);renderListSheet()},
   ladd:()=>{const v=$('ni').value.trim();if(!v)return;draft.push({id:'i'+rid(),t:v.slice(0,120)});renderListSheet();setTimeout(()=>{const n=$('ni');if(n)n.focus()},0)},
   lsave:guard(async()=>{await updateDoc(vref(),{['lists.'+ltype]:draft});closeSheet();say(t('saved'))}),
-  ack:guard(async b=>{await updateDoc(doc(db,'venues',V.id,'alerts',b.dataset.id),{ackAt:serverTimestamp(),ackBy:myName()})}),
+  ack:guard(async b=>{await updateDoc(doc(db,'venues',V.id,'alerts',b.dataset.id),{ackAt:serverTimestamp(),ackBy:myName()});if(document.querySelector('#sheet .alertPop'))closeSheet()}),
   shareCode:()=>shareText(t('inviteCode',APP_URL+'?c='+V.code,V.code)),
   shareInvite:()=>shareText(lastInvite),
   addSheet:()=>openSheet(`<h2>${t('addStaff').replace('+ ','')}</h2>${staffForm(null)}<button class="btn fill block" style="margin-top:12px" data-a="addStaff">${t('save')}</button>`),
