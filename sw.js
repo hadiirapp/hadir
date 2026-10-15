@@ -6,7 +6,7 @@ self.addEventListener('push', (e) => {
   try { d = e.data ? e.data.json() : {}; } catch (x) { d = { title: 'Hadir', body: e.data ? e.data.text() : '' }; }
   e.waitUntil(self.registration.showNotification(d.title || 'Hadir', {
     body: d.body || '', icon: 'icon.png', badge: 'icon.png', tag: d.tag || undefined, renotify: !!d.tag,
-    requireInteraction: /^alert-/.test(d.tag || ''), vibrate: /^alert-/.test(d.tag || '') ? [300, 120, 300, 120, 500] : [200],
+    requireInteraction: /^(alert|chk)-/.test(d.tag || ''), vibrate: /^(alert|chk)-/.test(d.tag || '') ? [300, 120, 300, 120, 500] : [200],
     data: { url: d.url || './' },
   }));
 });
