@@ -1328,7 +1328,7 @@ async function bDemo(){const nm=((prompt(lang==='ar'?'اسم المحل بالد
   const v=await addDoc(collection(db,'venues'),{name:nm,code:mkCode(),ownerUid:auth.currentUser.uid,lat:null,lng:null,radius:100,grace:10,cutoff:'05:00',status:'pending',lists:defaultLists(),alertTypes:defaultAlerts(),pingTypes:defaultPings(),positions:defaultPositions(),demo:true});
   await updateDoc(doc(db,'venues',v.id),{status:'active',paidUntil:Timestamp.fromMillis(Date.now()+864e5-GRACE)});
   const uid=await newAcct({un,em,pw});await setDoc(doc(db,'users',uid),{role:'owner',venueId:v.id,venueIds:[v.id],name:'Demo',email:em,username:un});
-  lastInvite=`Hadir demo · ${nm} (15 min)\n${APP_URL}\n\nUsername: ${un}\nPassword: ${pw}\n\nThe 15 minutes start when you log in.`;
+  lastInvite=`Hadir demo · ${nm} (15 min)\nTap to open, no login needed:\n${APP_URL}?d=${btoa(un+':'+pw)}\n\nThe 15 minutes start when you open it.`;
   openSheet(`<h2>✓ Demo</h2><pre class="inv">${esc(lastInvite)}</pre><button class="btn fill block" data-a="shareInvite">${t('shareInvite')}</button>`);bossList=null;loadBoss()}
 let demoSeeding=false;
 async function demoSeed(){try{const pos=V.positions||defaultPositions(),now=Date.now(),H=36e5;
@@ -1520,6 +1520,7 @@ function start(U0,V0){stop();U=U0;V=V0;bootAt=Date.now();say('');loadCfg().then(
       sub(query(col('checks'),where('date','>=',ymd(d2))),s=>{checks=s.docs.map(nck);render()});
     }
     render()}
+{const DQ=new URLSearchParams(location.search).get('d');if(DQ){history.replaceState(null,'',location.pathname);try{const [du,dp]=atob(DQ).split(':');creating=true;(async()=>{try{if(auth.currentUser&&(auth.currentUser.email||'').toLowerCase()!==fakeEm(du))await signOut(auth);await signInWithEmailAndPassword(auth,fakeEm(du),dp)}catch(e){}creating=false;boot(auth.currentUser)})()}catch(e){}}}
 onAuthStateChanged(auth,u=>{if(!creating)boot(u)});
 setInterval(render,30000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&U&&Date.now()-bootAt>12*36e5)boot(auth.currentUser);else if(document.visibilityState==='visible')render()});
