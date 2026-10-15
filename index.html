@@ -1301,7 +1301,7 @@ async function cfgSave(){const d={price:$('cp1').value.trim(),whish:$('cp2').val
 /* ---------- owner (Hadir) panel ---------- */
 async function loadBoss(){const q=await getDocs(collection(db,'venues'));bossList=q.docs.map(d=>({...d.data(),id:d.id})).sort((a,b)=>String(a.name).localeCompare(String(b.name)));render()}
 function viewBoss(){if(!bossList){loadBoss().catch(e=>say(errT(e),1));return `<div class="card mute">${t('loading')}</div>`}
-  return `<button class="btn block" style="margin-top:12px" data-a="bDemo">${lang==='ar'?'ديمو ١٥ دقيقة':'Demo · 15 min'}</button><button class="btn fill block" style="margin-top:12px" data-a="bNewVenueSheet">${t('newVenue')}</button><button class="btn block" style="margin-top:12px" data-a="cfgSheet">${t('cfgTitle')}</button><div class="card mute">${t('bHint')}</div><div class="card"><div class="top" style="margin-bottom:6px"><h2 style="margin:0">${t('aBoss')} (${bossList.filter(v=>v.status!=='deleted').length})</h2>${bossList.some(v=>v.status==='deleted')?`<button class="btn sm" data-a="bShowDel">${showDel?t('bHideDel'):t('bShowDel',bossList.filter(v=>v.status==='deleted').length)}</button>`:''}</div><div class="list">${bossList.filter(v=>showDel||v.status!=='deleted').map(v=>{const si=subInfo(v);
+  return `<button class="btn block" style="margin-top:12px" data-a="bPromo">${lang==='ar'?'حساب للفيديوهات (بلا وقت)':'Promo account · no limit'}</button><button class="btn block" style="margin-top:12px" data-a="bDemo">${lang==='ar'?'ديمو ١٥ دقيقة':'Demo · 15 min'}</button><button class="btn fill block" style="margin-top:12px" data-a="bNewVenueSheet">${t('newVenue')}</button><button class="btn block" style="margin-top:12px" data-a="cfgSheet">${t('cfgTitle')}</button><div class="card mute">${t('bHint')}</div><div class="card"><div class="top" style="margin-bottom:6px"><h2 style="margin:0">${t('aBoss')} (${bossList.filter(v=>v.status!=='deleted').length})</h2>${bossList.some(v=>v.status==='deleted')?`<button class="btn sm" data-a="bShowDel">${showDel?t('bHideDel'):t('bShowDel',bossList.filter(v=>v.status==='deleted').length)}</button>`:''}</div><div class="list">${bossList.filter(v=>showDel||v.status!=='deleted').map(v=>{const si=subInfo(v);
     if(si.deleted)return `<div class="row"><span>${esc(v.name)} <span class="mute ltr num">${esc(v.code)}</span><div><span class="badge bad">${t('bDeleted')}</span></div></span><span class="hb"><button class="btn sm" data-a="bRestore" data-id="${esc(v.id)}">${t('bRestore')}</button><button class="btn sm bad fill" data-a="bWipe" data-id="${esc(v.id)}">${t('bWipe')}</button></span></div>`;
     const st=si.pending?`<span class="badge warn">${t('bPending')}</span>`:si.susp?`<span class="badge bad">${t('bSusp')}</span>`:!si.pu?`<span class="badge">${t('bNoEnd')}</span>`:si.state==='blocked'?`<span class="badge bad">${t('bExpired',dateS(si.pu))}</span>`:si.state==='grace'?`<span class="badge warn">${t('bGrace',dateS(si.pu))}</span>`:`<span class="badge ${si.state==='soon'?'warn':'ok'}">${t('bActive',dateS(si.pu),si.days)}</span>`;
     return `<div class="row"><span>${esc(v.name)} <span class="mute ltr num">${esc(v.code)}</span><div>${st}</div></span><span class="hb"><button class="btn sm" data-a="bOwnerSheet" data-id="${esc(v.id)}">${t('bAddOwner')}</button><button class="btn sm" data-a="bAdminSheet" data-id="${esc(v.id)}">${t('bAddAdmin')}</button><button class="btn sm fill" data-a="bExt" data-id="${esc(v.id)}">${t('bExt')}</button>${si.pending?'':`<button class="btn sm${si.susp?'':' bad'}" data-a="bTog" data-id="${esc(v.id)}">${si.susp?t('bResume'):t('bSuspend')}</button>`}<button class="btn sm bad" data-a="bDel" data-id="${esc(v.id)}">${t('bDel')}</button></span></div>`}).join('')}</div></div>`}
@@ -1326,11 +1326,11 @@ async function bNewVenueSave(){const nm=($('nvn').value||'').trim();if(!nm)retur
   await addDoc(collection(db,'venues'),{name:nm,code:mkCode(),ownerUid:auth.currentUser.uid,lat:null,lng:null,radius:100,grace:10,cutoff:'05:00',status:'pending',lists:defaultLists(),alertTypes:defaultAlerts(),pingTypes:defaultPings(),positions:defaultPositions()});
   closeSheet();say(t('saved'));bossList=null;await loadBoss()}
 const DEMO_MS=15*60e3;
-async function bDemo(){const nm=((prompt(lang==='ar'?'اسم المحل بالديمو':'Demo venue name','Demo Lounge')||'').trim()||'Demo Lounge').slice(0,40),un='demo'+mkCode(),pw=String(100000+Math.random()*900000|0),em=fakeEm(un);
-  const v=await addDoc(collection(db,'venues'),{name:nm,code:mkCode(),ownerUid:auth.currentUser.uid,lat:null,lng:null,radius:100,grace:10,cutoff:'05:00',status:'pending',lists:defaultLists(),alertTypes:defaultAlerts(),pingTypes:defaultPings(),positions:defaultPositions(),demo:true});
-  await updateDoc(doc(db,'venues',v.id),{status:'active',paidUntil:Timestamp.fromMillis(Date.now()+864e5-GRACE)});
+async function bDemo(promo){const nm=((prompt(lang==='ar'?'اسم المحل بالديمو':'Demo venue name','Demo Lounge')||'').trim()||'Demo Lounge').slice(0,40),un='demo'+mkCode(),pw=String(100000+Math.random()*900000|0),em=fakeEm(un);
+  const v=await addDoc(collection(db,'venues'),{name:nm,code:mkCode(),ownerUid:auth.currentUser.uid,lat:null,lng:null,radius:100,grace:10,cutoff:'05:00',status:'pending',lists:defaultLists(),alertTypes:defaultAlerts(),pingTypes:defaultPings(),positions:defaultPositions(),demo:true,promo:!!promo});
+  await updateDoc(doc(db,'venues',v.id),{status:'active',paidUntil:Timestamp.fromMillis(Date.now()+(promo?365*864e5:864e5-GRACE))});
   const uid=await newAcct({un,em,pw});await setDoc(doc(db,'users',uid),{role:'owner',venueId:v.id,venueIds:[v.id],name:'Demo',email:em,username:un});
-  lastInvite=`Hadir demo · ${nm} (15 min)\nTap to open, no login needed:\n${APP_URL}?d=${btoa(un+':'+pw)}\n\nThe 15 minutes start when you open it.`;
+  lastInvite=promo?`Hadir promo account · ${nm} (no time limit)\n${APP_URL}?d=${btoa(un+':'+pw)}`:`Hadir demo · ${nm} (15 min)\nTap to open, no login needed:\n${APP_URL}?d=${btoa(un+':'+pw)}\n\nThe 15 minutes start when you open it.`;
   openSheet(`<h2>✓ Demo</h2><pre class="inv">${esc(lastInvite)}</pre><button class="btn fill block" data-a="shareInvite">${t('shareInvite')}</button>`);bossList=null;loadBoss()}
 let demoSeeding=false;
 async function demoSeed(){try{const pos=V.positions||defaultPositions(),now=Date.now(),H=36e5;
@@ -1340,10 +1340,10 @@ async function demoSeed(){try{const pos=V.positions||defaultPositions(),now=Date
 function demoCheck(){let bar=document.getElementById('demoBar');
   if(!V||!V.demo||!U||U.role==='boss'){if(bar)bar.remove();return}
   if(!V.demoStart&&isAdm()&&!demoSeeding){demoSeeding=true;V.demoStart=Timestamp.fromMillis(Date.now());updateDoc(vref(),{demoStart:V.demoStart}).catch(()=>{});demoSeed()}
-  const left=(tsMs(V.demoStart)||Date.now())+DEMO_MS-Date.now();
+  const left=V.promo?864e5:(tsMs(V.demoStart)||Date.now())+DEMO_MS-Date.now();
   if(left<=0){if(bar)bar.remove();clearSessions();V=null;signOut(auth).catch(()=>{});demoOver();return}
   if(!bar){bar=document.createElement('button');bar.id='demoBar';bar.type='button';bar.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom));z-index:99;background:#7FE0CF;color:#0B1F1D;border:0;border-radius:22px;padding:10px 18px;font:inherit;font-size:.9rem;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.4);white-space:nowrap';bar.innerHTML=`<span id="demoL"></span> · <span id="demoT"></span>`;bar.onclick=()=>demoSwitch();document.body.appendChild(bar)}
-  const m=Math.floor(left/6e4),sc=Math.floor(left%6e4/1e3),el=document.getElementById('demoT');if(el)el.textContent=m+':'+String(sc).padStart(2,'0');const lb=document.getElementById('demoL');if(lb)lb.textContent=U.role==='staff'?(lang==='ar'?'رجوع للمالك':'Back to owner'):(lang==='ar'?'جرّب كموظف':'Try as staff')}
+  const m=Math.floor(left/6e4),sc=Math.floor(left%6e4/1e3),el=document.getElementById('demoT');if(el){el.textContent=V.promo?'':m+':'+String(sc).padStart(2,'0');if(el.previousSibling&&el.previousSibling.nodeType===3)el.previousSibling.textContent=V.promo?'':' · '}const lb=document.getElementById('demoL');if(lb)lb.textContent=U.role==='staff'?(lang==='ar'?'رجوع للمالك':'Back to owner'):(lang==='ar'?'جرّب كموظف':'Try as staff')}
 const DEMO_ME=()=>lang==='ar'?'إنت (تجربة)':'You (demo)';
 let demoOwnerU=null;
 function demoSwitch(){if(!V||!V.demo||!U)return;closeSheet&&closeSheet();tab='now';stab='shift';window.scrollTo(0,0);
@@ -1606,7 +1606,7 @@ const A={
   cpick:b=>{cDraft[b.dataset.g][b.dataset.k]=b.dataset.v;renderColorSheet()},
   rowSheet:b=>rowSheet(b.dataset.p),rowApply:guard(rowApply),dayCopySheet:b=>dayCopySheet(b.dataset.d),dayCopy:guard(dayCopy),
   forgotSheet:()=>forgotSheet(),forgotSend:guard(forgotSend),linkEmailSheet:()=>linkEmailSheet(),linkEmailSend:guard(linkEmailSend),
-  bNewVenueSheet:()=>bNewVenueSheet(),bDemo:guard(bDemo),bNewVenueSave:guard(bNewVenueSave),
+  bNewVenueSheet:()=>bNewVenueSheet(),bDemo:guard(()=>bDemo(false)),bPromo:guard(()=>bDemo(true)),bNewVenueSave:guard(bNewVenueSave),
   actSheet:()=>{actSheet();render();header()},
   payOnToggle:guard(async()=>{const on=V.payOn===false;await updateDoc(vref(),{payOn:on});act('payOn',on?t('turnOn'):t('turnOff'));say(t('saved'))}),
   help:()=>helpSheet(),
