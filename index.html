@@ -1431,10 +1431,16 @@ async function demoSeed(){try{const pos=V.positions||defaultPositions(),now=Date
 function demoCheck(){let bar=document.getElementById('demoBar');
   if(!V||!V.demo||!U||U.role==='boss'){if(bar)bar.remove();return}
   if(!V.demoStart&&isAdm()&&!demoSeeding){demoSeeding=true;V.demoStart=Timestamp.fromMillis(Date.now());updateDoc(vref(),{demoStart:V.demoStart}).catch(()=>{});demoSeed()}
+  if(V.promo&&isAdm()&&V.demoStart&&!demoRefreshing&&(V.demoDay!==bizDate(Date.now())||V.demoLang!==lang)){demoRefreshing=true;setTimeout(()=>demoRefresh().catch(()=>{}),3500)}
   const left=V.promo?864e5:(tsMs(V.demoStart)||Date.now())+DEMO_MS-Date.now();
   if(left<=0){if(bar)bar.remove();clearSessions();V=null;signOut(auth).catch(()=>{});demoOver();return}
   if(!bar){bar=document.createElement('button');bar.id='demoBar';bar.type='button';bar.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom));z-index:99;background:#7FE0CF;color:#0B1F1D;border:0;border-radius:22px;padding:10px 18px;font:inherit;font-size:.9rem;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.4);white-space:nowrap';bar.innerHTML=`<span id="demoL"></span> · <span id="demoT"></span>`;bar.onclick=()=>demoSwitch();document.body.appendChild(bar)}
   const m=Math.floor(left/6e4),sc=Math.floor(left%6e4/1e3),el=document.getElementById('demoT');if(el){el.textContent=V.promo?'':m+':'+String(sc).padStart(2,'0');if(el.previousSibling&&el.previousSibling.nodeType===3)el.previousSibling.textContent=V.promo?'':' · '}const lb=document.getElementById('demoL');if(lb)lb.textContent=U.role==='staff'?(lang==='ar'?'رجوع للمالك':'Back to owner'):(lang==='ar'?'جرّب كموظف':'Try as staff')}
+let demoRefreshing=false;
+async function demoRefresh(){const now=Date.now(),H=36e5,td=bizDate(now),b=writeBatch(db),N=['Rami','Maya','Karim','Lea','Jad','Nour','Tarek','Sara'];
+  logs.filter(x=>!x.o&&isStale(x)).forEach(x=>b.update(doc(db,'venues',V.id,'logs',x.id),{outAt:Timestamp.fromMillis(Math.min(now,x.t+8*H))}));
+  if(V.demoDay!==td)[['Rami',-3.2],['Maya',-3],['Karim',-2.6],['Lea',-2.1],['Jad',-1.4],['Tarek',-2.9]].forEach(([nm,o])=>{const id='demo'+N.indexOf(nm);if(!logs.some(x=>x.uid===id&&!x.o&&!isStale(x)))b.set(doc(col('logs')),{uid:id,name:nm,inAt:Timestamp.fromMillis(now+o*H),outAt:null,manual:true})});
+  const up={demoDay:td,demoLang:lang,alertTypes:defaultAlerts(),pingTypes:defaultPings()};b.update(vref(),up);await b.commit();Object.assign(V,up);render()}
 const DEMO_ME=()=>lang==='ar'?'إنت (تجربة)':'You (demo)';
 let demoOwnerU=null;
 function demoSwitch(){if(!V||!V.demo||!U)return;closeSheet&&closeSheet();tab='now';stab='shift';window.scrollTo(0,0);
