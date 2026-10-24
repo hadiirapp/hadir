@@ -1,0 +1,20 @@
+{
+  "appId": "com.usehadir.app",
+  "appName": "Hadir",
+  "webDir": "www",
+  "server": {
+    "url": "https://usehadir.com/",
+    "allowNavigation": ["usehadir.com", "*.usehadir.com", "*.firebaseapp.com", "*.googleapis.com", "*.gstatic.com", "*.workers.dev"],
+    "errorPath": "offline.html"
+  },
+  "ios": {
+    "contentInset": "never",
+    "appendUserAgent": "HadirIOS",
+    "backgroundColor": "#0B0F10",
+    "limitsNavigationsToAppBoundDomains": false
+  },
+  "plugins": {
+    "SplashScreen": { "launchShowDuration": 600, "backgroundColor": "#0B0F10", "showSpinner": false },
+    "PushNotifications": { "presentationOptions": ["badge", "sound", "alert"] }
+  }
+}
