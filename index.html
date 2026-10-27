@@ -374,7 +374,7 @@ const rid=()=>Math.random().toString(36).slice(2,9);
 const toInput=ms=>{const d=new Date(ms);return `${ymd(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}`};
 const daysTxt=n=>lang==='ar'?(n===1?'يوم واحد':n===2?'يومين':(n>=3&&n<=10)?`${n} أيام`:`${n} يوم`):(n===1?'1 day':`${n} days`);
 const offTxt=a=>(a||[]).slice().sort().map(i=>t('wd')[i]).join(lang==='ar'?'، ':', ');
-const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const isStandalone=()=>IOS||matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 let sayT=0;
@@ -1020,7 +1020,8 @@ async function advReqSend(){const amt=Math.round((+String($('ara').value).replac
 const pushUrl=()=>String((CFG&&CFG.pushUrl)||'').replace(/\/+$/,'');
 const isIOS=()=>/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const pushSupported=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
-function pushState(){if(!pushUrl())return'none';if(isIOS()&&!isStandalone())return'install';if(!pushSupported())return'na';
+const NPN=()=>IOS&&window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.PushNotifications;
+function pushState(){if(!pushUrl())return'none';if(IOS){if(!NPN())return'na';if(lsGet('hadir-npd')==='1')return'denied';return lsGet('hadir-push-'+(U&&U.uid))==='1'?'on':'off'}if(isIOS()&&!isStandalone())return'install';if(!pushSupported())return'na';
   if(Notification.permission==='denied')return'denied';return Notification.permission==='granted'&&lsGet('hadir-push-'+(U&&U.uid))==='1'?'on':'off'}
 const unb64=s=>{s=String(s).replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const r=atob(s);const o=new Uint8Array(r.length);for(let i=0;i<r.length;i++)o[i]=r.charCodeAt(i);return o};
 async function pushApi(path,body){const u=pushUrl();if(!u||!auth.currentUser||!V)return null;const tk=await auth.currentUser.getIdToken();
@@ -1028,13 +1029,22 @@ async function pushApi(path,body){const u=pushUrl();if(!u||!auth.currentUser||!V
 const pnotify=(type,ids)=>{if(!pushUrl())return;ids=(ids||[]).filter(Boolean);if(ids.length)pushApi('/notify',{type,ids}).catch(()=>{})};
 const pdone=(date,kinds)=>{if(pushUrl())pushApi('/done',{date,kinds}).catch(()=>{})};
 async function swReg(){if(!('serviceWorker' in navigator))return null;try{return await navigator.serviceWorker.register('sw.js')}catch(e){return null}}
-async function enablePush(){const st=pushState();if(st==='none')return say(t('pushNoServer'),1);if(st==='install')return installSheet();if(st==='na')return say(t('pushNA'),1);
+function nativeToken(P){return new Promise((res,rej)=>{let done=false;const hs=[P.addListener('registration',x=>{done=true;res(x.value)}),P.addListener('registrationError',e=>{if(!done){done=true;rej(e)}})];
+  const end=()=>hs.forEach(h=>Promise.resolve(h).then(x=>x&&x.remove&&x.remove()).catch(()=>{}));P.register().catch(e=>{if(!done){done=true;rej(e)}});setTimeout(()=>{if(!done){done=true;rej(new Error('timeout'))}end()},15000)})}
+async function nativePush(on){const P=NPN();if(!P)return say(t('pushNA'),1);
+  if(!on){const tk=lsGet('hadir-apns');if(tk)await pushApi('/unsub',{endpoint:'apns:'+tk}).catch(()=>{});try{await P.unregister()}catch(e){}lsSet('hadir-push-'+U.uid,'0');say(t('pushOff'));render();return}
+  try{let p=await P.checkPermissions();if(p.receive!=='granted')p=await P.requestPermissions();if(p.receive!=='granted'){lsSet('hadir-npd','1');render();return say(t('pushDenied'),1)}lsSet('hadir-npd','0');
+    const tk=await nativeToken(P);const r=await pushApi('/sub',{apns:tk});if(!r)throw new Error('sub');lsSet('hadir-apns',tk);lsSet('hadir-push-'+U.uid,'1');say(t('pushOn'));render();pushApi('/test',{}).catch(()=>{});if(isAdm())planSoon(true)}
+  catch(e){say(t('pushFail'),1)}}
+let npnSynced=false;async function nativePushSync(){if(npnSynced||!IOS||!U||!V||pushState()!=='on')return;npnSynced=true;const P=NPN();
+  try{const p=await P.checkPermissions();if(p.receive!=='granted'){lsSet('hadir-push-'+U.uid,'0');render();return}const tk=await nativeToken(P);if(tk)await pushApi('/sub',{apns:tk});lsSet('hadir-apns',tk)}catch(e){}}
+async function enablePush(){if(IOS)return nativePush(true);const st=pushState();if(st==='none')return say(t('pushNoServer'),1);if(st==='install')return installSheet();if(st==='na')return say(t('pushNA'),1);
   const perm=await Notification.requestPermission();if(perm!=='granted')return say(t('pushDenied'),1);
   try{const reg=await swReg();await navigator.serviceWorker.ready;const k=await(await fetch(pushUrl()+'/vapid')).json();
     let sb=await reg.pushManager.getSubscription();if(!sb)sb=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:unb64(k.key)});
     const r=await pushApi('/sub',{sub:sb.toJSON()});if(!r)throw new Error('sub');lsSet('hadir-push-'+U.uid,'1');say(t('pushOn'));render();pushApi('/test',{}).catch(()=>{});if(isAdm())planSoon(true)}
   catch(e){say(t('pushFail'),1)}}
-async function disablePush(){try{const reg=await navigator.serviceWorker.getRegistration();const sb=reg&&await reg.pushManager.getSubscription();if(sb){await pushApi('/unsub',{endpoint:sb.endpoint}).catch(()=>{});await sb.unsubscribe()}}catch(e){}
+async function disablePush(){if(IOS)return nativePush(false);try{const reg=await navigator.serviceWorker.getRegistration();const sb=reg&&await reg.pushManager.getSubscription();if(sb){await pushApi('/unsub',{endpoint:sb.endpoint}).catch(()=>{});await sb.unsubscribe()}}catch(e){}
   lsSet('hadir-push-'+U.uid,'0');say(t('pushOff'));render()}
 function pushCard(){const st=pushState();if(st==='none'||st==='on'||st==='na'||lsGet('hadir-d-push'))return'';
   return `<div class="card pcard"><span class="sicon t-teal">${ic('bell',22)}</span><div style="flex:1;min-width:0"><div style="font-weight:700">${t('pushCardT')}</div><div class="mute" style="font-size:.82rem">${st==='install'?t('pushCardIos'):st==='denied'?t('pushDenied'):t('pushCardS')}</div></div><span class="hb">${st==='denied'?'':`<button class="btn sm fill" data-a="${st==='install'?'install':'pushOn'}">${st==='install'?t('installRow'):t('turnOnBtn')}</button>`}<button class="ibtn sm" style="border:0;background:transparent" data-a="dismiss" data-k="push" aria-label="close">${ic('x',16)}</button></span></div>`}
@@ -1562,6 +1572,7 @@ async function syncEmail(){const u=auth.currentUser;if(!u||!U||!U.username)retur
 
 /* ---------- render / boot ---------- */
 function render(){header();alertBar();if(!U)return;
+  if(IOS&&V)nativePushSync();
   if(U.role==='boss'){hideNav();$('app').innerHTML=viewBoss();return}const a=document.activeElement;if(a&&$('app').contains(a)&&/INPUT|SELECT|TEXTAREA/.test(a.tagName))return;
   const si=subInfo();RO=si.state==='blocked';
   if(!isAdm()&&RO){hideNav();$('app').innerHTML=`<div class="card" style="text-align:center;padding:28px"><span class="sicon t-red" style="margin:0 auto 10px">${ic('lock',22)}</span><p>${t('subBlockedStaff')}</p></div><button class="btn block" style="margin-top:12px" data-a="logout">${ic('logout',18)}${t('logout')}</button>`;return}
