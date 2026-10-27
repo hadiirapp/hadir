@@ -21,9 +21,9 @@ jobs:
       run:
         working-directory: ios-app
     env:
-      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-      TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      RAW_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      RAW_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      RAW_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       BUILD_NO: ${{ github.run_number }}
       APP_VERSION: ${{ inputs.version || '1.0' }}
     steps:
@@ -31,6 +31,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      - name: Clean up secret values
+        run: |
+          for v in KEY_ID:ASC_KEY_ID ISSUER_ID:ASC_ISSUER_ID TEAM_ID:TEAM_ID; do
+            raw="RAW_${v%%:*}"; val=$(printf '%s' "${!raw}" | tr -d '[:space:]')
+            [ -n "$val" ] || { echo "::error::secret for ${v#*:} is empty"; exit 1; }
+            echo "::add-mask::$val"; echo "${v#*:}=$val" >> "$GITHUB_ENV"
+          done
 
       - name: Pick Xcode 26
         run: |
