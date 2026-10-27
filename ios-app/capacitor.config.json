@@ -3,7 +3,7 @@
   "appName": "Hadir",
   "webDir": "www",
   "server": {
-    "url": "https://usehadir.com/",
+    "url": "https://usehadir.com/?login=1",
     "allowNavigation": ["usehadir.com", "*.usehadir.com", "*.firebaseapp.com", "*.googleapis.com", "*.gstatic.com", "*.workers.dev"],
     "errorPath": "offline.html"
   },
