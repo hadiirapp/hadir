@@ -31,6 +31,8 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Hadir uses your location only when you clock in or out, to confirm you are at your workplace. It never tracks you in the background.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Hadir uses your location only when you clock in or out, to confirm you are at your workplace.</string>
 	<key>UIBackgroundModes</key>
